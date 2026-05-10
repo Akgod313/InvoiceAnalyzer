@@ -120,6 +120,9 @@ export default function App() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editFormData, setEditFormData] = useState({});
 
+  const [savingDb, setSavingDb] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
   const handleFileChange = (e) => {
     if (e.target.files[0]) setFile(e.target.files[0]);
   };
@@ -156,6 +159,26 @@ export default function App() {
       alert('Server connection failed. Is Render awake?');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUploadToDatabase = async () => {
+    setSavingDb(true);
+    setSaveMessage('');
+    try {
+      // We send the current state of 'results', which includes all your manual edits!
+      const response = await fetch('https://invoiceanalyzerbackend.onrender.com/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(results),
+      });
+      const data = await response.json();
+      setSaveMessage(data.status === 'Success' ? '✅ Successfully saved to Neon!' : '❌ ' + data.status);
+    } catch (error) {
+      console.error(error);
+      setSaveMessage('❌ Connection failed');
+    } finally {
+      setSavingDb(false);
     }
   };
 
@@ -502,6 +525,36 @@ export default function App() {
                 </div>
               </div>
             </GlassCard>
+
+            {/* NEW: DATABASE UPLOAD SECTION */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 24, gap: 16 }}>
+              {saveMessage && (
+                <span style={{ fontSize: 13, color: saveMessage.includes('✅') ? 'rgba(80, 220, 120, 0.9)' : 'rgba(255, 100, 100, 0.9)', fontWeight: 600 }}>
+                  {saveMessage}
+                </span>
+              )}
+              <button
+                onClick={handleUploadToDatabase}
+                disabled={savingDb}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: 12,
+                  border: '0.5px solid rgba(80, 200, 120, 0.4)',
+                  background: savingDb ? 'rgba(80, 200, 120, 0.1)' : 'linear-gradient(135deg, rgba(60, 180, 100, 0.2) 0%, rgba(40, 140, 80, 0.1) 100%)',
+                  color: savingDb ? 'rgba(255,255,255,0.5)' : 'white',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  cursor: savingDb ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(40, 160, 80, 0.15)',
+                }}
+              >
+                {savingDb ? 'Uploading...' : 'Upload to Database'}
+              </button>
+            </div>
+            {/* END DATABASE UPLOAD SECTION */}
+
+            
 
             {results.gstin_numbers?.length > 0 && (
               <p style={{ marginTop: 12, textAlign: 'center', fontSize: 12, color: 'rgba(130,145,180,0.5)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
