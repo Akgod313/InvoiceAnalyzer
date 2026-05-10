@@ -38,7 +38,7 @@ function App() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("https://invoiceanalyzerbackend.onrender.com", {
+      const response = await fetch("https://invoiceanalyzerbackend.onrender.com/analyze", {
         method: "POST",
         body: formData,
       });
