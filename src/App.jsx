@@ -122,6 +122,21 @@ export default function App() {
     }
   };
 
+  // --- NEW MATH LOGIC ---
+  // Safely extract the tax number (handles "18%" or just 18)
+  const getTaxRate = (taxVal) => {
+    if (!taxVal) return 0;
+    const num = parseFloat(taxVal.toString().replace(/[^0-9.]/g, ''));
+    return isNaN(num) ? 0 : num;
+  };
+
+  // Calculate Base Amount + Tax
+  const getItemTotalWithTax = (item) => {
+    const baseAmount = parseFloat(item.amount) || 0;
+    const taxRate = getTaxRate(item.tax_percentage);
+    return baseAmount + (baseAmount * (taxRate / 100));
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -138,7 +153,7 @@ export default function App() {
         <div style={{ position: 'absolute', top: '40%', left: '30%', width: '40%', height: '30%', borderRadius: '50%', background: 'rgba(20,80,180,0.08)', filter: 'blur(80px)' }} />
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 950, margin: '0 auto', position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <header style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{
@@ -280,7 +295,7 @@ export default function App() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 850 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      {['Item', 'Type', 'Sub-Type', 'Tax %', 'Qty', 'Unit Price', 'Total'].map((h, i) => (
+                      {['Item', 'Type', 'Sub-Type', 'Tax %', 'Qty', 'Unit Price', 'Total (w/ Tax)'].map((h, i) => (
                         <th key={h} style={{
                           padding: '12px 20px',
                           fontSize: 11,
@@ -288,7 +303,7 @@ export default function App() {
                           letterSpacing: '0.12em',
                           color: 'rgba(140,170,220,0.6)',
                           textTransform: 'uppercase',
-                          textAlign: i >= 3 ? 'right' : 'left', // Aligns numbers to right
+                          textAlign: i >= 3 ? 'right' : 'left', 
                           borderBottom: '0.5px solid rgba(255,255,255,0.06)',
                         }}>
                           {h}
@@ -305,33 +320,27 @@ export default function App() {
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
-                        {/* Description */}
                         <td style={{ padding: '14px 20px', fontSize: 14, color: 'rgba(220,230,255,0.9)', fontWeight: 500 }}>
                           {item.description}
                         </td>
-                        {/* Type */}
                         <td style={{ padding: '14px 20px' }}>
                           <TypeBadge label={item.type} />
                         </td>
-                        {/* Sub-Type */}
                         <td style={{ padding: '14px 20px', fontSize: 13, color: 'rgba(180,200,240,0.7)' }}>
                           {item.sub_type || '-'}
                         </td>
-                        {/* Tax Percentage */}
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, color: 'rgba(180,200,240,0.7)' }}>
-                          {item.tax_percentage ? `${item.tax_percentage}%` : '-'}
+                          {item.tax_percentage ? `${getTaxRate(item.tax_percentage)}%` : '-'}
                         </td>
-                        {/* Quantity */}
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: 'rgba(120,190,255,0.9)', fontSize: 14 }}>
                           {item.quantity}
                         </td>
-                        {/* Unit Price */}
                         <td style={{ padding: '14px 20px', textAlign: 'right', color: 'rgba(160,170,210,0.6)', fontSize: 13 }}>
-                          ₹{item.unit_price?.toLocaleString()}
+                          ₹{item.unit_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
-                        {/* Total Amount */}
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 14 }}>
-                          ₹{item.amount?.toLocaleString()}
+                          {/* USING THE NEW MATH HERE */}
+                          ₹{getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                       </tr>
                     ))}
@@ -349,9 +358,10 @@ export default function App() {
                 gap: 16,
                 background: 'rgba(255,255,255,0.02)',
               }}>
-                <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>Grand Total</span>
+                <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>Grand Total (Inc. Tax)</span>
                 <span style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>
-                  ₹{results.items.reduce((s, it) => s + (it.amount || 0), 0).toLocaleString()}
+                  {/* USING THE NEW MATH FOR THE SUM */}
+                  ₹{results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </GlassCard>
