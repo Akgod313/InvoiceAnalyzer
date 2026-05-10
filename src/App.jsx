@@ -150,10 +150,7 @@ function App() {
         </table>
           </div>
         ) : (
-          !loading &&
-          !error && (
-            <p className="glass-empty">No data to display yet.</p>
-          )
+          !loading && <p className="text-center mt-4">No data to display yet.</p>
         )}
       </div>
     </div>
