@@ -138,7 +138,7 @@ export default function App() {
         <div style={{ position: 'absolute', top: '40%', left: '30%', width: '40%', height: '30%', borderRadius: '50%', background: 'rgba(20,80,180,0.08)', filter: 'blur(80px)' }} />
       </div>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <header style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{
@@ -174,84 +174,86 @@ export default function App() {
         </header>
 
         {/* Upload Card */}
-        <GlassCard style={{ padding: 36 }}>
-          <label
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: 140,
-              borderRadius: 16,
-              border: `1.5px dashed ${dragOver ? 'rgba(100,170,255,0.6)' : 'rgba(255,255,255,0.12)'}`,
-              background: dragOver ? 'rgba(80,140,255,0.08)' : 'rgba(255,255,255,0.02)',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <div style={{
-              width: 44, height: 44, borderRadius: 12, marginBottom: 12,
-              background: 'linear-gradient(135deg, rgba(100,160,255,0.2), rgba(120,80,255,0.15))',
-              border: '0.5px solid rgba(140,180,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 1px 0 rgba(255,255,255,0.15) inset',
-            }}>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="rgba(160,210,255,0.8)" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-              </svg>
-            </div>
-            <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: 0 }}>
-              <span style={{ color: 'rgba(120,190,255,1)', fontWeight: 600 }}>Click to upload</span> or drag and drop
-            </p>
-            <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '6px 0 0' }}>
-              {file ? file.name : 'PNG, JPG or JPEG'}
-            </p>
-            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
-          </label>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <GlassCard style={{ padding: 36 }}>
+            <label
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 140,
+                borderRadius: 16,
+                border: `1.5px dashed ${dragOver ? 'rgba(100,170,255,0.6)' : 'rgba(255,255,255,0.12)'}`,
+                background: dragOver ? 'rgba(80,140,255,0.08)' : 'rgba(255,255,255,0.02)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{
+                width: 44, height: 44, borderRadius: 12, marginBottom: 12,
+                background: 'linear-gradient(135deg, rgba(100,160,255,0.2), rgba(120,80,255,0.15))',
+                border: '0.5px solid rgba(140,180,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 1px 0 rgba(255,255,255,0.15) inset',
+              }}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="rgba(160,210,255,0.8)" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+              </div>
+              <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: 0 }}>
+                <span style={{ color: 'rgba(120,190,255,1)', fontWeight: 600 }}>Click to upload</span> or drag and drop
+              </p>
+              <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '6px 0 0' }}>
+                {file ? file.name : 'PNG, JPG or JPEG'}
+              </p>
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
+            </label>
 
-          <button
-            onClick={analyzeQuote}
-            disabled={loading}
-            style={{
-              marginTop: 24,
-              width: '100%',
-              padding: '14px 32px',
-              borderRadius: 14,
-              border: '0.5px solid rgba(255,255,255,0.2)',
-              background: loading
-                ? 'rgba(60,100,200,0.3)'
-                : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)',
-              backdropFilter: 'blur(12px)',
-              color: 'white',
-              fontWeight: 700,
-              fontSize: 15,
-              letterSpacing: '0.01em',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              boxShadow: loading ? 'none' : `
-                0 1px 0 rgba(255,255,255,0.25) inset,
-                0 -1px 0 rgba(0,0,0,0.2) inset,
-                0 4px 20px rgba(60,100,255,0.3),
-                0 1px 4px rgba(0,0,0,0.3)
-              `,
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {loading ? (
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                <span style={{
-                  display: 'inline-block', width: 16, height: 16,
-                  border: '2px solid rgba(255,255,255,0.25)', borderTopColor: 'white',
-                  borderRadius: '50%', animation: 'spin 0.7s linear infinite',
-                }} />
-                Processing…
-              </span>
-            ) : 'Analyze Invoice'}
-          </button>
-        </GlassCard>
+            <button
+              onClick={analyzeQuote}
+              disabled={loading}
+              style={{
+                marginTop: 24,
+                width: '100%',
+                padding: '14px 32px',
+                borderRadius: 14,
+                border: '0.5px solid rgba(255,255,255,0.2)',
+                background: loading
+                  ? 'rgba(60,100,200,0.3)'
+                  : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)',
+                backdropFilter: 'blur(12px)',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: 15,
+                letterSpacing: '0.01em',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1,
+                boxShadow: loading ? 'none' : `
+                  0 1px 0 rgba(255,255,255,0.25) inset,
+                  0 -1px 0 rgba(0,0,0,0.2) inset,
+                  0 4px 20px rgba(60,100,255,0.3),
+                  0 1px 4px rgba(0,0,0,0.3)
+                `,
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <span style={{
+                    display: 'inline-block', width: 16, height: 16,
+                    border: '2px solid rgba(255,255,255,0.25)', borderTopColor: 'white',
+                    borderRadius: '50%', animation: 'spin 0.7s linear infinite',
+                  }} />
+                  Processing…
+                </span>
+              ) : 'Analyze Invoice'}
+            </button>
+          </GlassCard>
+        </div>
 
         {/* Results */}
         {results?.items?.length > 0 && (
@@ -275,10 +277,10 @@ export default function App() {
               </div>
 
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 850 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      {['Item', 'Type', 'Qty', 'Unit Price', 'Total'].map((h, i) => (
+                      {['Item', 'Type', 'Sub-Type', 'Tax %', 'Qty', 'Unit Price', 'Total'].map((h, i) => (
                         <th key={h} style={{
                           padding: '12px 20px',
                           fontSize: 11,
@@ -286,7 +288,7 @@ export default function App() {
                           letterSpacing: '0.12em',
                           color: 'rgba(140,170,220,0.6)',
                           textTransform: 'uppercase',
-                          textAlign: i >= 2 ? 'right' : 'left',
+                          textAlign: i >= 3 ? 'right' : 'left', // Aligns numbers to right
                           borderBottom: '0.5px solid rgba(255,255,255,0.06)',
                         }}>
                           {h}
@@ -303,18 +305,31 @@ export default function App() {
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
+                        {/* Description */}
                         <td style={{ padding: '14px 20px', fontSize: 14, color: 'rgba(220,230,255,0.9)', fontWeight: 500 }}>
                           {item.description}
                         </td>
+                        {/* Type */}
                         <td style={{ padding: '14px 20px' }}>
                           <TypeBadge label={item.type} />
                         </td>
+                        {/* Sub-Type */}
+                        <td style={{ padding: '14px 20px', fontSize: 13, color: 'rgba(180,200,240,0.7)' }}>
+                          {item.sub_type || '-'}
+                        </td>
+                        {/* Tax Percentage */}
+                        <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, color: 'rgba(180,200,240,0.7)' }}>
+                          {item.tax_percentage ? `${item.tax_percentage}%` : '-'}
+                        </td>
+                        {/* Quantity */}
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: 'rgba(120,190,255,0.9)', fontSize: 14 }}>
                           {item.quantity}
                         </td>
+                        {/* Unit Price */}
                         <td style={{ padding: '14px 20px', textAlign: 'right', color: 'rgba(160,170,210,0.6)', fontSize: 13 }}>
                           ₹{item.unit_price?.toLocaleString()}
                         </td>
+                        {/* Total Amount */}
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 14 }}>
                           ₹{item.amount?.toLocaleString()}
                         </td>
