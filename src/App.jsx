@@ -143,12 +143,15 @@ export default function App() {
       const data = await response.json();
       setResults(data);
       
-      // LOG VENDOR ADDRESS TO CONSOLE
+      // --- DEBUGGING LOGS ---
+      console.log("📦 FULL RAW DATA FROM BACKEND:", data); // This proves what the backend sent
+      
       if (data.vendor_address) {
-        console.log("-----------------------------------------");
-        console.log("📍 EXTRACTED VENDOR ADDRESS:", data.vendor_address);
-        console.log("-----------------------------------------");
+        console.log("✅ EXTRACTED ADDRESS:", data.vendor_address);
+      } else {
+        console.log("❌ ADDRESS MISSING FROM BACKEND RESPONSE");
       }
+      // ----------------------
 
     } catch (error) {
       console.error('Analysis failed:', error);
@@ -340,16 +343,18 @@ export default function App() {
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
               }}>
+                {/* Left Side: Vendor Name + EXACT Invoice Details format */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
                     {results.vendor_name || 'Vendor Details'} · {results.items.length} items
                   </span>
                   <span style={{ fontSize: 11, color: 'rgba(140,160,200,0.7)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                    INV NO: <span style={{color: 'white'}}>{results.invoice_no || 'N/A'}</span> &nbsp;|&nbsp; 
-                    DATE: <span style={{color: 'white'}}>{results.invoice_date || 'N/A'}</span>
+                    Invoice no.: <span style={{color: 'white'}}>{results.invoice_no || 'N/A'}</span> &nbsp;|&nbsp; 
+                    Date: <span style={{color: 'white'}}>{results.invoice_date || 'N/A'}</span>
                   </span>
                 </div>
 
+                {/* Right Side: Billed To */}
                 <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.9)', textAlign: 'right' }}>
                   <span style={{ color: 'rgba(130,150,200,0.6)', marginRight: 6 }}>BILLED TO:</span>
                   {results.paid_to || "Not Found"}
