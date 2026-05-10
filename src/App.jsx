@@ -225,7 +225,7 @@ export default function App() {
             color: 'rgba(160,200,255,0.8)',
             textTransform: 'uppercase',
           }}>
-            AI-Powered
+            TheHouseKraft
           </div>
           <h1 style={{
             fontSize: 52,
