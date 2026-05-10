@@ -117,40 +117,37 @@ function App() {
 
         {results && results.length > 0 ? (
           <div className="glass-table-scroll">
-            <table className="glass-table">
-              <thead>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead className="bg-gray-100">
                 <tr>
-                  <th>Vendor</th>
-                  <th>Inv No</th>
-                  <th>Inv Date</th>
-                  <th>Description</th>
-                  <th>Type</th>
-                  <th>Sub-type</th>
-                  <th>Base Amount</th>
-                  <th>Tax (%)</th>
-                  <th>Final Cost</th>
+                  <th className="px-4 py-2 border">Item Name</th>
+                  <th className="px-4 py-2 border">Type</th>
+                  <th className="px-4 py-2 border">Sub-Type</th>
+                  <th className="px-4 py-2 border">Paid To</th>
+                  <th className="px-4 py-2 border">GSTIN(s)</th>
+                  <th className="px-4 py-2 border">Qty</th>
+                  <th className="px-4 py-2 border">Unit Price</th>
+                  <th className="px-4 py-2 border">Total</th>
                 </tr>
               </thead>
-              <tbody>
-                {results.map((row, index) => (
-                  <tr
-                    key={`${row.Invoice_No}-${row.Description}-${index}`}
-                  >
-                    <td>{row.Vendor}</td>
-                    <td>{row.Invoice_No}</td>
-                    <td>{row.Invoice_Date}</td>
-                    <td>{row.Description}</td>
-                    <td>{row.Type}</td>
-                    <td>{row["Sub-type"]}</td>
-                    <td className="num">₹{formatMoney(row.Base_Amount)}</td>
-                    <td className="num tax">{formatPercent(row.Tax_Percent)}</td>
-                    <td className="num total">
-                      ₹{formatMoney(row.Final_Amount)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <tbody>
+              {results.items?.map((item, index) => (
+              <tr key={index} className="hover:bg-gray-50 text-sm">
+                <td className="px-4 py-2 border font-medium">{item.description}</td>
+                <td className="px-4 py-2 border">{item.type}</td>
+                <td className="px-4 py-2 border">{item.sub_type}</td>
+                {/* We show the top-level invoice data in every row for clarity */}
+                <td className="px-4 py-2 border">{results.paid_to || "N/A"}</td>
+                <td className="px-4 py-2 border">
+                  {results.gstin_numbers ? results.gstin_numbers.join(", ") : "N/A"}
+                </td>
+                <td className="px-4 py-2 border text-center font-bold">{item.quantity}</td>
+                <td className="px-4 py-2 border text-right">₹{item.unit_price?.toLocaleString()}</td>
+                <td className="px-4 py-2 border text-right font-semibold">₹{item.amount?.toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
           </div>
         ) : (
           !loading &&
