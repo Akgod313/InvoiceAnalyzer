@@ -122,15 +122,12 @@ export default function App() {
     }
   };
 
-  // --- NEW MATH LOGIC ---
-  // Safely extract the tax number (handles "18%" or just 18)
   const getTaxRate = (taxVal) => {
     if (!taxVal) return 0;
     const num = parseFloat(taxVal.toString().replace(/[^0-9.]/g, ''));
     return isNaN(num) ? 0 : num;
   };
 
-  // Calculate Base Amount + Tax
   const getItemTotalWithTax = (item) => {
     const baseAmount = parseFloat(item.amount) || 0;
     const taxRate = getTaxRate(item.tax_percentage);
@@ -146,7 +143,6 @@ export default function App() {
       padding: '60px 24px 80px',
       boxSizing: 'border-box',
     }}>
-      {/* Ambient orbs */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-15%', left: '-10%', width: '50%', height: '50%', borderRadius: '50%', background: 'rgba(50,100,255,0.15)', filter: 'blur(100px)' }} />
         <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '45%', height: '45%', borderRadius: '50%', background: 'rgba(120,60,220,0.15)', filter: 'blur(100px)' }} />
@@ -154,7 +150,6 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 950, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        {/* Header */}
         <header style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{
             display: 'inline-block',
@@ -188,7 +183,6 @@ export default function App() {
           </p>
         </header>
 
-        {/* Upload Card */}
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <GlassCard style={{ padding: 36 }}>
             <label
@@ -270,10 +264,11 @@ export default function App() {
           </GlassCard>
         </div>
 
-        {/* Results */}
         {results?.items?.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <GlassCard style={{ padding: 0, overflow: 'hidden' }}>
+              
+              {/* UPDATED HEADER: NOW SHOWS VENDOR AND BILLED TO CLEARLY */}
               <div style={{
                 padding: '16px 24px',
                 borderBottom: '0.5px solid rgba(255,255,255,0.08)',
@@ -281,14 +276,13 @@ export default function App() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}>
-                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.7)', textTransform: 'uppercase' }}>
-                  Results · {results.items.length} items
+                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
+                  {results.vendor_name || 'Vendor Details'} · {results.items.length} items
                 </span>
-                {results.paid_to && (
-                  <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.6)' }}>
-                    {results.paid_to}
-                  </span>
-                )}
+                <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.9)' }}>
+                  <span style={{ color: 'rgba(130,150,200,0.6)', marginRight: 6 }}>BILLED TO:</span>
+                  {results.paid_to || "Not Found"}
+                </span>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
@@ -339,7 +333,6 @@ export default function App() {
                           ₹{item.unit_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 14 }}>
-                          {/* USING THE NEW MATH HERE */}
                           ₹{getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                       </tr>
@@ -348,7 +341,6 @@ export default function App() {
                 </table>
               </div>
 
-              {/* Footer total */}
               <div style={{
                 padding: '14px 24px',
                 borderTop: '0.5px solid rgba(255,255,255,0.08)',
@@ -360,7 +352,6 @@ export default function App() {
               }}>
                 <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>Grand Total (Inc. Tax)</span>
                 <span style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>
-                  {/* USING THE NEW MATH FOR THE SUM */}
                   ₹{results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
