@@ -117,7 +117,6 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   
-  // --- NEW EDIT STATE ---
   const [editingIndex, setEditingIndex] = useState(null);
   const [editFormData, setEditFormData] = useState({});
 
@@ -143,6 +142,14 @@ export default function App() {
       });
       const data = await response.json();
       setResults(data);
+      
+      // LOG VENDOR ADDRESS TO CONSOLE
+      if (data.vendor_address) {
+        console.log("-----------------------------------------");
+        console.log("📍 EXTRACTED VENDOR ADDRESS:", data.vendor_address);
+        console.log("-----------------------------------------");
+      }
+
     } catch (error) {
       console.error('Analysis failed:', error);
       alert('Server connection failed. Is Render awake?');
@@ -163,7 +170,6 @@ export default function App() {
     return baseAmount + (baseAmount * (taxRate / 100));
   };
 
-  // --- EDIT HANDLERS ---
   const handleEditClick = (index, item) => {
     setEditingIndex(index);
     setEditFormData({ ...item });
@@ -177,18 +183,16 @@ export default function App() {
     const newItems = [...results.items];
     const updatedItem = { ...editFormData };
     
-    // Ensure numbers don't break the math
     updatedItem.quantity = parseFloat(updatedItem.quantity) || 1;
     updatedItem.amount = parseFloat(updatedItem.amount) || 0;
     
-    // Auto-recalculate unit price if amount or qty changed
     updatedItem.unit_price = updatedItem.quantity > 0 
       ? (updatedItem.amount / updatedItem.quantity) 
       : updatedItem.amount;
 
     newItems[editingIndex] = updatedItem;
     setResults({ ...results, items: newItems });
-    setEditingIndex(null); // Close editor
+    setEditingIndex(null); 
   };
 
   const handleCancelEdit = () => {
@@ -225,7 +229,7 @@ export default function App() {
             color: 'rgba(160,200,255,0.8)',
             textTransform: 'uppercase',
           }}>
-            TheHouseKraft
+            AI-Powered
           </div>
           <h1 style={{
             fontSize: 52,
@@ -333,13 +337,20 @@ export default function App() {
                 padding: '16px 24px',
                 borderBottom: '0.5px solid rgba(255,255,255,0.08)',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 justifyContent: 'space-between',
               }}>
-                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
-                  {results.vendor_name || 'Vendor Details'} · {results.items.length} items
-                </span>
-                <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.9)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
+                    {results.vendor_name || 'Vendor Details'} · {results.items.length} items
+                  </span>
+                  <span style={{ fontSize: 11, color: 'rgba(140,160,200,0.7)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                    INV NO: <span style={{color: 'white'}}>{results.invoice_no || 'N/A'}</span> &nbsp;|&nbsp; 
+                    DATE: <span style={{color: 'white'}}>{results.invoice_date || 'N/A'}</span>
+                  </span>
+                </div>
+
+                <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.9)', textAlign: 'right' }}>
                   <span style={{ color: 'rgba(130,150,200,0.6)', marginRight: 6 }}>BILLED TO:</span>
                   {results.paid_to || "Not Found"}
                 </span>
@@ -378,49 +389,41 @@ export default function App() {
                           onMouseEnter={e => { if(!isEditing) e.currentTarget.style.background = 'rgba(255,255,255,0.025)' }}
                           onMouseLeave={e => { if(!isEditing) e.currentTarget.style.background = 'transparent' }}
                         >
-                          {/* Description */}
                           <td style={{ padding: '12px 16px', fontSize: 14, color: 'rgba(220,230,255,0.9)', fontWeight: 500, minWidth: '180px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.description || ''} onChange={(e) => handleEditChange('description', e.target.value)} />
                             ) : item.description}
                           </td>
-                          {/* Type */}
                           <td style={{ padding: '12px 16px', minWidth: '120px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.type || ''} onChange={(e) => handleEditChange('type', e.target.value)} />
                             ) : <TypeBadge label={item.type} />}
                           </td>
-                          {/* Sub-Type */}
                           <td style={{ padding: '12px 16px', fontSize: 13, color: 'rgba(180,200,240,0.7)', minWidth: '120px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.sub_type || ''} onChange={(e) => handleEditChange('sub_type', e.target.value)} />
                             ) : (item.sub_type || '-')}
                           </td>
-                          {/* Tax Percentage */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 13, color: 'rgba(180,200,240,0.7)', minWidth: '80px' }}>
                             {isEditing ? (
                               <input style={{...inputStyle, textAlign: 'right'}} value={editFormData.tax_percentage || ''} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} />
                             ) : (item.tax_percentage ? `${getTaxRate(item.tax_percentage)}%` : '-')}
                           </td>
-                          {/* Quantity */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'rgba(120,190,255,0.9)', fontSize: 14, minWidth: '70px' }}>
                             {isEditing ? (
                               <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.quantity || ''} onChange={(e) => handleEditChange('quantity', e.target.value)} />
                             ) : item.quantity}
                           </td>
-                          {/* Unit Price (Raw Amount before tax) */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', color: 'rgba(160,170,210,0.6)', fontSize: 13, minWidth: '90px' }}>
                             {isEditing ? (
                               <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Auto-Calc</span>
                             ) : `₹${item.unit_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </td>
-                          {/* Total Amount (Base or Base+Tax) */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 14, minWidth: '110px' }}>
                             {isEditing ? (
                               <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.amount || ''} onChange={(e) => handleEditChange('amount', e.target.value)} />
                             ) : `₹${getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </td>
-                          {/* Actions */}
                           <td style={{ padding: '12px 16px', textAlign: 'center', minWidth: '130px' }}>
                             {isEditing ? (
                               <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
