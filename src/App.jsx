@@ -362,10 +362,10 @@ export default function App() {
               </div>
 
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 950 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1150 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      {['Item', 'Type', 'Sub-Type', 'Tax %', 'Qty', 'Unit Price', 'Total (w/ Tax)', 'Actions'].map((h, i) => (
+                      {['Item', 'HSN/SAC', 'Type', 'Sub-Type', 'Tax %', 'Qty', 'Unit Price', 'Base Total', 'Total (w/ Tax)', 'Actions'].map((h, i) => (
                         <th key={h} style={{
                           padding: '12px 16px',
                           fontSize: 11,
@@ -373,7 +373,7 @@ export default function App() {
                           letterSpacing: '0.12em',
                           color: 'rgba(140,170,220,0.6)',
                           textTransform: 'uppercase',
-                          textAlign: (i >= 3 && i <= 6) ? 'right' : (i === 7 ? 'center' : 'left'), 
+                          textAlign: (i >= 4 && i <= 8) ? 'right' : (i === 9 ? 'center' : 'left'), 
                           borderBottom: '0.5px solid rgba(255,255,255,0.06)',
                         }}>
                           {h}
@@ -394,41 +394,70 @@ export default function App() {
                           onMouseEnter={e => { if(!isEditing) e.currentTarget.style.background = 'rgba(255,255,255,0.025)' }}
                           onMouseLeave={e => { if(!isEditing) e.currentTarget.style.background = 'transparent' }}
                         >
+                          {/* Description */}
                           <td style={{ padding: '12px 16px', fontSize: 14, color: 'rgba(220,230,255,0.9)', fontWeight: 500, minWidth: '180px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.description || ''} onChange={(e) => handleEditChange('description', e.target.value)} />
                             ) : item.description}
                           </td>
+                          
+                          {/* NEW COLUMN: HSN/SAC */}
+                          <td style={{ padding: '12px 16px', fontSize: 13, color: 'rgba(180,200,240,0.8)', minWidth: '90px', fontFamily: 'monospace' }}>
+                            {isEditing ? (
+                              <input style={inputStyle} value={editFormData.hsn_sac || ''} onChange={(e) => handleEditChange('hsn_sac', e.target.value)} />
+                            ) : (item.hsn_sac || '-')}
+                          </td>
+
+                          {/* Type */}
                           <td style={{ padding: '12px 16px', minWidth: '120px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.type || ''} onChange={(e) => handleEditChange('type', e.target.value)} />
                             ) : <TypeBadge label={item.type} />}
                           </td>
+                          
+                          {/* Sub-Type */}
                           <td style={{ padding: '12px 16px', fontSize: 13, color: 'rgba(180,200,240,0.7)', minWidth: '120px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.sub_type || ''} onChange={(e) => handleEditChange('sub_type', e.target.value)} />
                             ) : (item.sub_type || '-')}
                           </td>
+                          
+                          {/* Tax Percentage */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 13, color: 'rgba(180,200,240,0.7)', minWidth: '80px' }}>
                             {isEditing ? (
                               <input style={{...inputStyle, textAlign: 'right'}} value={editFormData.tax_percentage || ''} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} />
                             ) : (item.tax_percentage ? `${getTaxRate(item.tax_percentage)}%` : '-')}
                           </td>
+                          
+                          {/* Quantity */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'rgba(120,190,255,0.9)', fontSize: 14, minWidth: '70px' }}>
                             {isEditing ? (
                               <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.quantity || ''} onChange={(e) => handleEditChange('quantity', e.target.value)} />
                             ) : item.quantity}
                           </td>
+                          
+                          {/* Unit Price */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', color: 'rgba(160,170,210,0.6)', fontSize: 13, minWidth: '90px' }}>
                             {isEditing ? (
                               <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Auto-Calc</span>
                             ) : `₹${item.unit_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 14, minWidth: '110px' }}>
+                          
+                          {/* Base Total (Pre-Tax) */}
+                          <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: 'rgba(200,210,240,0.85)', fontSize: 14, minWidth: '110px' }}>
                             {isEditing ? (
                               <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.amount || ''} onChange={(e) => handleEditChange('amount', e.target.value)} />
+                            ) : `₹${(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          </td>
+
+                          {/* Total With Tax */}
+                          <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 14, minWidth: '110px' }}>
+                            {isEditing ? (
+                              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Auto-Calc</span>
                             ) : `₹${getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </td>
+
+                          {/* Actions */}
                           <td style={{ padding: '12px 16px', textAlign: 'center', minWidth: '130px' }}>
                             {isEditing ? (
                               <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
