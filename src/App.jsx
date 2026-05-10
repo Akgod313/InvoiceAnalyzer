@@ -7,82 +7,87 @@ function App() {
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
-    setResults(null); // Clear previous results
   };
 
   const analyzeQuote = async () => {
     if (!file) return alert("Please select an image first");
-    
     setLoading(true);
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      // REPLACE THIS URL WITH YOUR ACTUAL RENDER URL
+      // Use your actual Render URL here
       const response = await fetch("https://your-backend-url.onrender.com/analyze", {
         method: "POST",
         body: formData,
       });
 
       const data = await response.json();
-      console.log("Response:", data); // Check console for this!
       setResults(data);
     } catch (error) {
-      console.error("Error:", error);
-      alert("Server error occurred.");
+      alert("Analysis failed. Check your connection.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4 text-center">Invoice Analyzer</h1>
-      
-      <div className="flex flex-col items-center gap-4 bg-gray-800 p-10 rounded-xl">
-        <input type="file" onChange={handleFileChange} className="text-white" />
-        <button 
-          onClick={analyzeQuote}
-          disabled={loading}
-          className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 disabled:bg-gray-500"
-        >
-          {loading ? "Analyzing..." : "Analyze Quote"}
-        </button>
-      </div>
+    <div className="min-h-screen bg-[#0f172a] text-white p-8 font-sans">
+      <div className="max-w-6xl mx-auto text-center">
+        <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          Invoice Analyzer
+        </h1>
+        <p className="text-gray-400 mb-10">Upload a quotation to categorize materials instantly.</p>
+        
+        {/* Upload Box */}
+        <div className="bg-[#1e293b] border-2 border-dashed border-blue-500/30 p-12 rounded-3xl shadow-2xl transition-all hover:border-blue-500/60">
+          <input 
+            type="file" 
+            accept="image/*" // FORCE IMAGES ONLY
+            onChange={handleFileChange} 
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor:pointer"
+          />
+          <button 
+            onClick={analyzeQuote}
+            disabled={loading}
+            className="mt-8 bg-gradient-to-r from-blue-600 to-blue-500 px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {loading ? "Processing..." : "Analyze Quote"}
+          </button>
+        </div>
 
-      {/* RESULT SECTION */}
-      <div className="mt-10">
-        {results && results.items && results.items.length > 0 ? (
-          <div className="overflow-x-auto shadow-lg rounded-lg">
-            <table className="min-w-full bg-white border">
-              <thead className="bg-gray-200">
+        {/* New Results Table */}
+        {results && results.items && (
+          <div className="mt-12 overflow-hidden rounded-2xl border border-gray-700 bg-[#1e293b] shadow-2xl animate-in fade-in duration-500">
+            <table className="w-full text-left">
+              <thead className="bg-[#334155] text-blue-300 text-xs uppercase tracking-wider">
                 <tr>
-                  <th className="p-3 border">Item Name</th>
-                  <th className="p-3 border">Type</th>
-                  <th className="p-3 border">Paid To</th>
-                  <th className="p-3 border">GSTIN</th>
-                  <th className="p-3 border text-center">Qty</th>
-                  <th className="p-3 border text-right">Unit Price</th>
-                  <th className="p-3 border text-right">Total</th>
+                  <th className="p-4">Item Name</th>
+                  <th className="p-4">Type</th>
+                  <th className="p-4">Paid To</th>
+                  <th className="p-4">GSTIN</th>
+                  <th className="p-4 text-center">Qty</th>
+                  <th className="p-4 text-right">Unit Price</th>
+                  <th className="p-4 text-right">Total</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-700">
                 {results.items.map((item, i) => (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="p-3 border">{item.description}</td>
-                    <td className="p-3 border">{item.type}</td>
-                    <td className="p-3 border">{results.paid_to}</td>
-                    <td className="p-3 border">{results.gstin_numbers?.join(", ")}</td>
-                    <td className="p-3 border text-center">{item.quantity}</td>
-                    <td className="p-3 border text-right">₹{item.unit_price}</td>
-                    <td className="p-3 border text-right font-bold">₹{item.amount}</td>
+                  <tr key={i} className="hover:bg-blue-900/10 transition-colors">
+                    <td className="p-4 text-sm font-medium">{item.description}</td>
+                    <td className="p-4 text-sm text-gray-400">{item.type}</td>
+                    <td className="p-4 text-sm text-gray-400">{results.paid_to}</td>
+                    <td className="p-4 text-sm text-gray-400 font-mono text-[10px]">
+                      {results.gstin_numbers?.join(", ") || "N/A"}
+                    </td>
+                    <td className="p-4 text-center font-bold text-blue-400">{item.quantity}</td>
+                    <td className="p-4 text-right text-gray-300">₹{item.unit_price}</td>
+                    <td className="p-4 text-right font-bold text-white">₹{item.amount}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        ) : (
-          !loading && <p className="text-center text-gray-400 mt-4">No data to display yet.</p>
         )}
       </div>
     </div>
