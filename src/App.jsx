@@ -143,15 +143,13 @@ export default function App() {
       const data = await response.json();
       setResults(data);
       
-      // --- DEBUGGING LOGS ---
-      console.log("📦 FULL RAW DATA FROM BACKEND:", data); // This proves what the backend sent
+      console.log("📦 FULL RAW DATA FROM BACKEND:", data);
       
       if (data.vendor_address) {
-        console.log("✅ EXTRACTED ADDRESS:", data.vendor_address);
+        console.log("📍 EXTRACTED VENDOR ADDRESS:", data.vendor_address);
       } else {
         console.log("❌ ADDRESS MISSING FROM BACKEND RESPONSE");
       }
-      // ----------------------
 
     } catch (error) {
       console.error('Analysis failed:', error);
@@ -217,7 +215,7 @@ export default function App() {
         <div style={{ position: 'absolute', top: '40%', left: '30%', width: '40%', height: '30%', borderRadius: '50%', background: 'rgba(20,80,180,0.08)', filter: 'blur(80px)' }} />
       </div>
 
-      <div style={{ maxWidth: 1050, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
         <header style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{
             display: 'inline-block',
@@ -343,7 +341,6 @@ export default function App() {
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
               }}>
-                {/* Left Side: Vendor Name + EXACT Invoice Details format */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
                     {results.vendor_name || 'Vendor Details'} · {results.items.length} items
@@ -354,7 +351,6 @@ export default function App() {
                   </span>
                 </div>
 
-                {/* Right Side: Billed To */}
                 <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.9)', textAlign: 'right' }}>
                   <span style={{ color: 'rgba(130,150,200,0.6)', marginRight: 6 }}>BILLED TO:</span>
                   {results.paid_to || "Not Found"}
@@ -394,70 +390,60 @@ export default function App() {
                           onMouseEnter={e => { if(!isEditing) e.currentTarget.style.background = 'rgba(255,255,255,0.025)' }}
                           onMouseLeave={e => { if(!isEditing) e.currentTarget.style.background = 'transparent' }}
                         >
-                          {/* Description */}
                           <td style={{ padding: '12px 16px', fontSize: 14, color: 'rgba(220,230,255,0.9)', fontWeight: 500, minWidth: '180px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.description || ''} onChange={(e) => handleEditChange('description', e.target.value)} />
                             ) : item.description}
                           </td>
                           
-                          {/* NEW COLUMN: HSN/SAC */}
                           <td style={{ padding: '12px 16px', fontSize: 13, color: 'rgba(180,200,240,0.8)', minWidth: '90px', fontFamily: 'monospace' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.hsn_sac || ''} onChange={(e) => handleEditChange('hsn_sac', e.target.value)} />
                             ) : (item.hsn_sac || '-')}
                           </td>
 
-                          {/* Type */}
                           <td style={{ padding: '12px 16px', minWidth: '120px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.type || ''} onChange={(e) => handleEditChange('type', e.target.value)} />
                             ) : <TypeBadge label={item.type} />}
                           </td>
                           
-                          {/* Sub-Type */}
                           <td style={{ padding: '12px 16px', fontSize: 13, color: 'rgba(180,200,240,0.7)', minWidth: '120px' }}>
                             {isEditing ? (
                               <input style={inputStyle} value={editFormData.sub_type || ''} onChange={(e) => handleEditChange('sub_type', e.target.value)} />
                             ) : (item.sub_type || '-')}
                           </td>
                           
-                          {/* Tax Percentage */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 13, color: 'rgba(180,200,240,0.7)', minWidth: '80px' }}>
                             {isEditing ? (
                               <input style={{...inputStyle, textAlign: 'right'}} value={editFormData.tax_percentage || ''} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} />
                             ) : (item.tax_percentage ? `${getTaxRate(item.tax_percentage)}%` : '-')}
                           </td>
                           
-                          {/* Quantity */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'rgba(120,190,255,0.9)', fontSize: 14, minWidth: '70px' }}>
                             {isEditing ? (
                               <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.quantity || ''} onChange={(e) => handleEditChange('quantity', e.target.value)} />
                             ) : item.quantity}
                           </td>
                           
-                          {/* Unit Price */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', color: 'rgba(160,170,210,0.6)', fontSize: 13, minWidth: '90px' }}>
                             {isEditing ? (
                               <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Auto-Calc</span>
                             ) : `₹${item.unit_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </td>
                           
-                          {/* Base Total (Pre-Tax) */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: 'rgba(200,210,240,0.85)', fontSize: 14, minWidth: '110px' }}>
                             {isEditing ? (
                               <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.amount || ''} onChange={(e) => handleEditChange('amount', e.target.value)} />
                             ) : `₹${(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </td>
 
-                          {/* Total With Tax */}
                           <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 14, minWidth: '110px' }}>
                             {isEditing ? (
                               <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Auto-Calc</span>
                             ) : `₹${getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </td>
 
-                          {/* Actions */}
                           <td style={{ padding: '12px 16px', textAlign: 'center', minWidth: '130px' }}>
                             {isEditing ? (
                               <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
@@ -476,18 +462,44 @@ export default function App() {
               </div>
 
               <div style={{
-                padding: '14px 24px',
+                padding: '20px 24px',
                 borderTop: '0.5px solid rgba(255,255,255,0.08)',
                 display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                gap: 16,
-                background: 'rgba(255,255,255,0.02)',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: 10,
+                background: 'rgba(255,255,255,0.015)',
               }}>
-                <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>Grand Total (Inc. Tax)</span>
-                <span style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>
-                  ₹{results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
+                  <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Base Amount:</span>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(200,210,240,0.85)' }}>
+                    ₹{results.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
+                  <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Tax:</span>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(180,200,240,0.7)' }}>
+                    ₹{(
+                        results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0) - 
+                        results.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0)
+                      ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  width: '320px', 
+                  marginTop: 8, 
+                  paddingTop: 16, 
+                  borderTop: '1px dashed rgba(255,255,255,0.15)' 
+                }}>
+                  <span style={{ fontSize: 15, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>Grand Total:</span>
+                  <span style={{ fontSize: 24, fontWeight: 800, color: 'white' }}>
+                    ₹{results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
               </div>
             </GlassCard>
 
