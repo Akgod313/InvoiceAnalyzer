@@ -198,9 +198,10 @@ export default function App() {
           <div style={{
             display: 'inline-block', marginBottom: 16, padding: '6px 18px', borderRadius: 999,
             background: 'linear-gradient(90deg, rgba(80,140,255,0.15), rgba(120,80,255,0.15))',
-            border: '0.5px solid rgba(120,180,255,0.25)', fontSize: 12, letterSpacing: '0.15em', fontWeight: 600, color: 'rgba(160,200,255,0.8)', textTransform: 'uppercase',
-          }}>
-            AI-Powered
+            border: '0.5px solid rgba(120,180,255,0.25)', fontSize: 12, letterSpacing: '0.15em', fontWeight: 600, color: 'rgba(160,200,255,0.8)',
+          }} 
+          className='TheHouseKraftHeading'>
+            TheHouseKraft
           </div>
           <h1 style={{
             fontSize: 52, fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 12px',
