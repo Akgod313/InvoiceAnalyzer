@@ -131,6 +131,7 @@ export default function App() {
       });
       const data = await response.json();
       setSaveMessage(data.status === 'Success' ? '✅ Successfully saved to Neon!' : '❌ ' + data.status);
+      console.log("Saved To Neon DB")
     } catch (error) {
       console.error(error);
       setSaveMessage('❌ Connection failed');
