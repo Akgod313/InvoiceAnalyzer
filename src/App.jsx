@@ -1,4 +1,4 @@
-import React, { useState, Component } from 'react';
+import React, { useState, Component, useRef } from 'react';
 
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
 
@@ -65,9 +65,10 @@ function TypeBadge({ label }) {
 
 // --- MAIN APP COMPONENT ---
 function MainApp() {
-  const [file, setFile] = useState(null);
-  const [results, setResults] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [results, setResults] = useState({ items: [] });
   const [loading, setLoading] = useState(false);
+  const [progressMsg, setProgressMsg] = useState('');
   const [dragOver, setDragOver] = useState(false);
   
   const [editingIndex, setEditingIndex] = useState(null);
@@ -75,32 +76,73 @@ function MainApp() {
   const [savingDb, setSavingDb] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [globalProject, setGlobalProject] = useState('');
+  
+  const folderInputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // 🔥 THE FIX: This ensures `items` is ALWAYS a valid array, never null.
   const safeItems = Array.isArray(results?.items) ? results.items : [];
 
-  const handleDrop = (e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); };
-
-  const analyzeQuote = async () => {
-    if (!file) return alert('Please select an image first');
-    setLoading(true); setSaveMessage('');
-    const formData = new FormData(); formData.append('file', file);
-    try {
-      const response = await fetch('https://invoiceanalyzerbackend.onrender.com/analyze', { method: 'POST', body: formData });
-      const data = await response.json();
-      if (data) setResults(data); else alert("Empty response from server.");
-    } catch (error) {
-      alert('Server connection failed.');
-    } finally {
-      setLoading(false);
+  const handleDrop = (e) => { 
+    e.preventDefault(); setDragOver(false); 
+    if (e.dataTransfer.files?.length > 0) {
+      const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+      setFiles(droppedFiles); 
     }
+  };
+
+  // MULTI-FILE QUEUE PROCESSOR
+  const analyzeBatch = async () => {
+    if (files.length === 0) return alert('Please select files or a folder first');
+    setLoading(true); setSaveMessage('');
+    
+    let accumulatedItems = [...safeItems]; 
+
+    for (let i = 0; i < files.length; i++) {
+      setProgressMsg(`Analyzing ${i + 1} of ${files.length}: ${files[i].name}...`);
+      const formData = new FormData(); 
+      formData.append('file', files[i]);
+      
+      try {
+        const response = await fetch('https://invoiceanalyzerbackend.onrender.com/analyze', { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        if (data && Array.isArray(data.items)) {
+          // IMPORTANT: Inject the parent invoice metadata directly into every item
+          const enrichedItems = data.items.map(item => ({
+            ...item,
+            vendor_name: data.vendor_name || 'Unknown Vendor',
+            vendor_address: data.vendor_address || '',
+            invoice_no: data.invoice_no || 'N/A',
+            invoice_date: data.invoice_date || 'N/A',
+            voucher_type: data.voucher_type || 'N/A',
+            place_of_supply: data.place_of_supply || 'N/A',
+            paid_to: data.paid_to || '',
+            gstin_numbers: data.gstin_numbers || []
+          }));
+          
+          accumulatedItems = [...accumulatedItems, ...enrichedItems];
+          // Update UI progressively so user sees items stream in
+          setResults({ items: accumulatedItems });
+        }
+      } catch (error) {
+        console.error(`Failed on ${files[i].name}:`, error);
+      }
+    }
+    
+    setLoading(false);
+    setProgressMsg('');
+    setFiles([]); // Clear queue after successful batch
   };
 
   const handleUploadToDatabase = async () => {
     if (!results || safeItems.length === 0) return;
     setSavingDb(true); setSaveMessage('');
     try {
-      const response = await fetch('https://invoiceanalyzerbackend.onrender.com/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(results) });
+      const response = await fetch('https://invoiceanalyzerbackend.onrender.com/save', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify(results) 
+      });
       const data = await response.json();
       setSaveMessage(data.status === 'Success' ? '✅ Successfully saved to Neon!' : '❌ ' + data.status);
     } catch (error) {
@@ -118,7 +160,6 @@ function MainApp() {
 
   const handleEditClick = (index, item) => { setEditingIndex(index); setEditFormData({ ...item }); };
   const handleEditChange = (field, value) => { setEditFormData({ ...editFormData, [field]: value }); };
-
   const handleCancelEdit = () => { setEditingIndex(null); setEditFormData({}); };
 
   const handleSaveEdit = () => {
@@ -126,42 +167,32 @@ function MainApp() {
     const newItems = [...safeItems];
     const updatedItem = { ...editFormData };
     
-    // Safety Parsing: Convert inputs to raw numbers cleanly
     updatedItem.quantity = parseNum(updatedItem.quantity) || 1;
     updatedItem.amount = parseNum(updatedItem.amount);
     updatedItem.unit_price = updatedItem.quantity > 0 ? (updatedItem.amount / updatedItem.quantity) : updatedItem.amount;
-    
     updatedItem.tax_percentage = parseNum(updatedItem.tax_percentage);
     updatedItem.cgst_amount = parseNum(updatedItem.cgst_amount);
     updatedItem.sgst_amount = parseNum(updatedItem.sgst_amount);
     updatedItem.igst_amount = parseNum(updatedItem.igst_amount);
 
     newItems[editingIndex] = updatedItem;
-    setResults({ ...results, items: newItems });
+    setResults({ items: newItems });
     setEditingIndex(null); 
   };
 
   const applyProjectToAll = () => {
     if (!results) return;
     const updatedItems = safeItems.map(item => ({ ...item, project: globalProject }));
-    setResults({ ...results, items: updatedItems });
+    setResults({ items: updatedItems });
     setGlobalProject(''); 
   };
 
-  const getHeaderProjectDisplay = () => {
-    if (safeItems.length === 0) return 'Unassigned';
-    const validProjects = safeItems
-      .map(item => item.project ? String(item.project).trim() : '')
-      .filter(p => p !== '' && p !== '-' && p !== 'Unassigned');
-      
-    if (validProjects.length === 0) return 'Unassigned';
-    const uniqueProjects = [...new Set(validProjects)];
-    return uniqueProjects.length === 1 ? uniqueProjects[0] : 'Mixed';
-  };
+  // Helper to count unique invoices in the batch
+  const uniqueInvoicesCount = new Set(safeItems.map(item => item.invoice_no)).size;
 
   return (
     <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 60% at 20% 10%, rgba(30,60,140,0.55) 0%, transparent 60%), radial-gradient(ellipse 70% 50% at 80% 80%, rgba(80,30,160,0.45) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 50% 50%, rgba(10,20,60,1) 0%, #050814 100%)', fontFamily: "'SF Pro Display', -apple-system, sans-serif", color: 'white', padding: '60px 24px 80px', boxSizing: 'border-box' }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 1600, margin: '0 auto', position: 'relative', zIndex: 1 }}>
         
         <header style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'inline-block', marginBottom: 16, padding: '6px 18px', borderRadius: 999, background: 'linear-gradient(90deg, rgba(80,140,255,0.15), rgba(120,80,255,0.15))', border: '0.5px solid rgba(120,180,255,0.25)', fontSize: 12, letterSpacing: '0.15em', fontWeight: 600, color: 'rgba(160,200,255,0.8)' }}>
@@ -174,15 +205,35 @@ function MainApp() {
 
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <GlassCard style={{ padding: 36 }}>
-            <label onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 140, borderRadius: 16, border: `1.5px dashed ${dragOver ? 'rgba(100,170,255,0.6)' : 'rgba(255,255,255,0.12)'}`, background: dragOver ? 'rgba(80,140,255,0.08)' : 'rgba(255,255,255,0.02)', cursor: 'pointer' }}>
-              <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: 0 }}>
-                <span style={{ color: 'rgba(120,190,255,1)', fontWeight: 600 }}>Click to upload</span> or drag and drop
+            <div 
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} 
+              onDragLeave={() => setDragOver(false)} 
+              onDrop={handleDrop} 
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 160, borderRadius: 16, border: `1.5px dashed ${dragOver ? 'rgba(100,170,255,0.6)' : 'rgba(255,255,255,0.12)'}`, background: dragOver ? 'rgba(80,140,255,0.08)' : 'rgba(255,255,255,0.02)', transition: 'all 0.2s' }}
+            >
+              <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: '0 0 12px' }}>
+                Drag and drop files, or click below:
               </p>
-              <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '6px 0 0' }}>{file ? file.name : 'PNG, JPG or JPEG'}</p>
-              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { if (e.target.files[0]) setFile(e.target.files[0]); }} />
-            </label>
-            <button onClick={analyzeQuote} disabled={loading} style={{ marginTop: 24, width: '100%', padding: '14px 32px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.2)', background: loading ? 'rgba(60,100,200,0.3)' : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)', color: 'white', fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-              {loading ? 'Processing...' : 'Analyze Invoice'}
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button onClick={() => fileInputRef.current.click()} style={{...actionBtnStyle, padding: '8px 16px', background: 'rgba(100, 160, 255, 0.15)', borderColor: 'rgba(100, 160, 255, 0.3)'}}>
+                  Select Files
+                </button>
+                <button onClick={() => folderInputRef.current.click()} style={{...actionBtnStyle, padding: '8px 16px', background: 'rgba(180, 100, 255, 0.15)', borderColor: 'rgba(180, 100, 255, 0.3)'}}>
+                  Select Folder
+                </button>
+              </div>
+              
+              <input type="file" accept="image/*" multiple style={{ display: 'none' }} ref={fileInputRef} onChange={(e) => setFiles(Array.from(e.target.files))} />
+              {/* webkitdirectory allows folder selection */}
+              <input type="file" accept="image/*" multiple webkitdirectory="true" style={{ display: 'none' }} ref={folderInputRef} onChange={(e) => setFiles(Array.from(e.target.files).filter(f => f.type.startsWith('image/')))} />
+              
+              <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '16px 0 0' }}>
+                {files.length > 0 ? `${files.length} images queued` : 'PNG, JPG or JPEG'}
+              </p>
+            </div>
+            
+            <button onClick={analyzeBatch} disabled={loading || files.length === 0} style={{ marginTop: 24, width: '100%', padding: '14px 32px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.2)', background: loading ? 'rgba(60,100,200,0.3)' : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)', color: 'white', fontWeight: 700, fontSize: 15, cursor: (loading || files.length === 0) ? 'not-allowed' : 'pointer', opacity: (loading || files.length === 0) ? 0.7 : 1 }}>
+              {loading ? progressMsg : 'Analyze Batch'}
             </button>
           </GlassCard>
         </div>
@@ -193,27 +244,21 @@ function MainApp() {
               
               <div style={{ padding: '16px 24px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
-                    {results.vendor_name || 'Vendor Details'} · {safeItems.length} items
+                  <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
+                    Master Batch Table
                   </span>
-                  <span style={{ fontSize: 11, color: 'rgba(140,160,200,0.7)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                    INV NO: <span style={{color: 'white'}}>{results.invoice_no || 'N/A'}</span> &nbsp;|&nbsp; DATE: <span style={{color: 'white'}}>{results.invoice_date || 'N/A'}</span> &nbsp;|&nbsp; TYPE: <span style={{color: 'white'}}>{results.voucher_type || 'N/A'}</span>
-                  </span>
-                  <span style={{ fontSize: 11, color: 'rgba(140,160,200,0.5)', fontFamily: 'monospace' }}>
-                    PROJECT: <span style={{color: getHeaderProjectDisplay() === 'Mixed' ? 'rgba(255,200,100,0.9)' : 'rgba(120,200,120,0.9)', fontWeight: 'bold'}}>{getHeaderProjectDisplay()}</span> &nbsp;|&nbsp; PoS: {results.place_of_supply || 'N/A'}
+                  <span style={{ fontSize: 12, color: 'rgba(140,160,200,0.7)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                    TOTAL ITEMS: <span style={{color: 'white'}}>{safeItems.length}</span> &nbsp;|&nbsp; UNIQUE INVOICES: <span style={{color: 'white'}}>{uniqueInvoicesCount}</span>
                   </span>
                 </div>
-                <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.9)', textAlign: 'right' }}>
-                  <span style={{ color: 'rgba(130,150,200,0.6)', marginRight: 6 }}>BILLED TO:</span>{results.paid_to || "Not Found"}
-                </span>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1550 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1750 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      {['Item', 'Project', 'HSN/SAC', 'Type', 'Sub-Type', 'UOM', 'Qty', 'Unit Price', 'Base Val', 'Tax %', 'CGST', 'SGST', 'IGST', 'Total', 'Actions'].map((h, i) => (
-                        <th key={h} style={{ padding: '12px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(140,170,220,0.6)', textTransform: 'uppercase', textAlign: (i >= 6 && i <= 13) ? 'right' : (i === 14 ? 'center' : 'left'), borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+                      {['Vendor', 'Inv No', 'Item', 'Project', 'HSN/SAC', 'Type', 'Sub-Type', 'UOM', 'Qty', 'Unit Price', 'Base Val', 'Tax %', 'CGST', 'SGST', 'IGST', 'Total', 'Actions'].map((h, i) => (
+                        <th key={h} style={{ padding: '12px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(140,170,220,0.6)', textTransform: 'uppercase', textAlign: (i >= 8 && i <= 15) ? 'right' : (i === 16 ? 'center' : 'left'), borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
                           {h}
                         </th>
                       ))}
@@ -224,6 +269,12 @@ function MainApp() {
                       const isEditing = editingIndex === i;
                       return (
                         <tr key={i} style={{ borderBottom: '0.5px solid rgba(255,255,255,0.04)', background: isEditing ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+                          <td style={{ padding: '12px', fontSize: 11, color: 'rgba(200,200,255,0.7)', minWidth: '120px', fontWeight: 600 }}>
+                            {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.vendor_name)} onChange={(e) => handleEditChange('vendor_name', e.target.value)} /> : item.vendor_name}
+                          </td>
+                          <td style={{ padding: '12px', fontSize: 11, color: 'rgba(180,200,240,0.6)', fontFamily: 'monospace', minWidth: '90px' }}>
+                            {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.invoice_no)} onChange={(e) => handleEditChange('invoice_no', e.target.value)} /> : item.invoice_no}
+                          </td>
                           <td style={{ padding: '12px', fontSize: 13, color: 'rgba(220,230,255,0.9)', fontWeight: 500, minWidth: '160px' }}>
                             {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.description)} onChange={(e) => handleEditChange('description', e.target.value)} /> : item.description}
                           </td>
@@ -255,13 +306,13 @@ function MainApp() {
                             {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.tax_percentage)} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} /> : (item.tax_percentage ? `${item.tax_percentage}%` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(200,100,100,0.8)' }}>
-                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.cgst_amount)} onChange={(e) => handleEditChange('cgst_amount', e.target.value)} /> : (item.cgst_amount ? `${parseNum(item.tax_percentage) / 2}%` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.cgst_amount)} onChange={(e) => handleEditChange('cgst_amount', e.target.value)} /> : (item.cgst_amount ? `₹${item.cgst_amount}` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(100,200,100,0.8)' }}>
-                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.sgst_amount)} onChange={(e) => handleEditChange('sgst_amount', e.target.value)} /> : (item.sgst_amount ? `${parseNum(item.tax_percentage) / 2}%` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.sgst_amount)} onChange={(e) => handleEditChange('sgst_amount', e.target.value)} /> : (item.sgst_amount ? `₹${item.sgst_amount}` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(100,150,255,0.8)' }}>
-                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.igst_amount)} onChange={(e) => handleEditChange('igst_amount', e.target.value)} /> : (item.igst_amount ? `${parseNum(item.tax_percentage)}%` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.igst_amount)} onChange={(e) => handleEditChange('igst_amount', e.target.value)} /> : (item.igst_amount ? `₹${item.igst_amount}` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 13 }}>
                             {isEditing ? <span style={{fontSize:10, color:'gray'}}>Auto</span> : `₹${getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
@@ -283,10 +334,8 @@ function MainApp() {
                 </table>
               </div>
 
-              {/* UPGRADED FOOTER: Bulk Project Assigner on Left, Totals on Right */}
+              {/* UPGRADED FOOTER */}
               <div style={{ padding: '20px 24px', borderTop: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', background: 'rgba(255,255,255,0.015)' }}>
-                
-                {/* Left Side: Bulk Assign Project */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 4 }}>
                   <label style={{ fontSize: 12, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.08em', fontWeight: 600, textTransform: 'uppercase' }}>
                     Bulk Assign Project
@@ -305,12 +354,8 @@ function MainApp() {
                       Apply to All
                     </button>
                   </div>
-                  <span style={{ fontSize: 11, color: 'rgba(120,140,180,0.5)' }}>
-                    *This will override the project name for every item above.
-                  </span>
                 </div>
 
-                {/* Right Side: Totals */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Base Amount:</span>
@@ -325,7 +370,7 @@ function MainApp() {
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px', marginTop: 8, paddingTop: 16, borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
-                    <span style={{ fontSize: 15, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>Grand Total:</span>
+                    <span style={{ fontSize: 15, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>Grand Batch Total:</span>
                     <span style={{ fontSize: 24, fontWeight: 800, color: 'white' }}>
                       ₹{safeItems.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
@@ -337,15 +382,9 @@ function MainApp() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 24, gap: 16 }}>
               {saveMessage && <span style={{ fontSize: 13, color: saveMessage.includes('✅') ? 'rgba(80, 220, 120, 0.9)' : 'rgba(255, 100, 100, 0.9)', fontWeight: 600 }}>{saveMessage}</span>}
               <button onClick={handleUploadToDatabase} disabled={savingDb} style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80, 200, 120, 0.4)', background: savingDb ? 'rgba(80, 200, 120, 0.1)' : 'linear-gradient(135deg, rgba(60, 180, 100, 0.2) 0%, rgba(40, 140, 80, 0.1) 100%)', color: savingDb ? 'rgba(255,255,255,0.5)' : 'white', fontWeight: 700, fontSize: 14, cursor: savingDb ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(40, 160, 80, 0.15)' }}>
-                {savingDb ? 'Uploading...' : 'Upload to Database'}
+                {savingDb ? 'Uploading Batch to Database...' : 'Upload Batch to Database'}
               </button>
             </div>
-            
-            {Array.isArray(results.gstin_numbers) && results.gstin_numbers.length > 0 && (
-              <p style={{ marginTop: 12, textAlign: 'center', fontSize: 12, color: 'rgba(130,145,180,0.5)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                GSTIN: {results.gstin_numbers.join(' · ')}
-              </p>
-            )}
           </div>
         )}
       </div>
