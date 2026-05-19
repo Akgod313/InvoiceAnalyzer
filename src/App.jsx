@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Component } from 'react';
 
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
 
@@ -12,6 +12,38 @@ const glassStyle = {
 const inputStyle = { width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: 'white', padding: '6px 10px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' };
 const actionBtnStyle = { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' };
 
+// --- SAFETY UTILITIES ---
+const getSafeVal = (val) => (val !== undefined && val !== null ? String(val) : '');
+const parseNum = (val) => {
+  if (!val) return 0;
+  const num = parseFloat(String(val).replace(/,/g, ''));
+  return isNaN(num) ? 0 : num;
+};
+
+// --- ERROR BOUNDARY (Prevents White Screens) ---
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null, info: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error, info) { this.setState({ info }); console.error("Caught by ErrorBoundary:", error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 40, color: 'white', background: '#111', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+          <h2 style={{ color: '#ff6b6b' }}>⚠️ React Crashed!</h2>
+          <p>Please share this exact error so we can fix it:</p>
+          <pre style={{ background: 'rgba(255,0,0,0.1)', padding: 20, borderRadius: 8, whiteSpace: 'pre-wrap', fontSize: 13, border: '1px solid rgba(255,0,0,0.3)' }}>
+            <strong>{this.state.error && this.state.error.toString()}</strong><br/><br/>
+            {this.state.info && this.state.info.componentStack}
+          </pre>
+          <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', marginTop: 20, cursor: 'pointer', borderRadius: 8, border: 'none', background: 'white', color: 'black', fontWeight: 'bold' }}>Reload App</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// --- UI COMPONENTS ---
 function GlassCard({ children, style = {}, className = '' }) {
   return (
     <div style={{ ...glassStyle, borderRadius: 28, ...style }} className={className}>
@@ -31,7 +63,8 @@ function TypeBadge({ label }) {
   );
 }
 
-export default function App() {
+// --- MAIN APP COMPONENT ---
+function MainApp() {
   const [file, setFile] = useState(null);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,8 +74,6 @@ export default function App() {
   const [editFormData, setEditFormData] = useState({});
   const [savingDb, setSavingDb] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-  
-  // NEW: State for the Bulk Project Assigner
   const [globalProject, setGlobalProject] = useState('');
 
   const handleDrop = (e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); };
@@ -75,10 +106,10 @@ export default function App() {
   };
 
   const getItemTotalWithTax = (item) => {
-    const base = parseFloat(item.amount) || 0;
-    const cgst = parseFloat(item.cgst_amount) || 0;
-    const sgst = parseFloat(item.sgst_amount) || 0;
-    const igst = parseFloat(item.igst_amount) || 0;
+    const base = parseNum(item.amount);
+    const cgst = parseNum(item.cgst_amount);
+    const sgst = parseNum(item.sgst_amount);
+    const igst = parseNum(item.igst_amount);
     return base + cgst + sgst + igst;
   };
 
@@ -89,35 +120,35 @@ export default function App() {
     const newItems = [...results.items];
     const updatedItem = { ...editFormData };
     
-    // Convert everything to proper numbers safely to prevent crashes
-    updatedItem.quantity = parseFloat(updatedItem.quantity) || 0;
-    updatedItem.amount = parseFloat(updatedItem.amount) || 0;
+    // Safety Parsing: Convert inputs to raw numbers cleanly
+    updatedItem.quantity = parseNum(updatedItem.quantity) || 1;
+    updatedItem.amount = parseNum(updatedItem.amount);
     updatedItem.unit_price = updatedItem.quantity > 0 ? (updatedItem.amount / updatedItem.quantity) : updatedItem.amount;
-    updatedItem.tax_percentage = parseFloat(updatedItem.tax_percentage) || 0;
-    updatedItem.cgst_amount = parseFloat(updatedItem.cgst_amount) || 0;
-    updatedItem.sgst_amount = parseFloat(updatedItem.sgst_amount) || 0;
-    updatedItem.igst_amount = parseFloat(updatedItem.igst_amount) || 0;
+    
+    updatedItem.tax_percentage = parseNum(updatedItem.tax_percentage);
+    updatedItem.cgst_amount = parseNum(updatedItem.cgst_amount);
+    updatedItem.sgst_amount = parseNum(updatedItem.sgst_amount);
+    updatedItem.igst_amount = parseNum(updatedItem.igst_amount);
 
     newItems[editingIndex] = updatedItem;
     setResults({ ...results, items: newItems });
     setEditingIndex(null); 
   };
 
-  // NEW: Bulk apply project to all rows
   const applyProjectToAll = () => {
     if (!results || !results.items) return;
-    const updatedItems = results.items.map(item => ({
-      ...item,
-      project: globalProject
-    }));
+    const updatedItems = results.items.map(item => ({ ...item, project: globalProject }));
     setResults({ ...results, items: updatedItems });
-    setGlobalProject(''); // Clear the input after applying
+    setGlobalProject(''); 
   };
 
-  // Logic to determine what Project to show in the global header
   const getHeaderProjectDisplay = () => {
     if (!results || !results.items || results.items.length === 0) return 'Unassigned';
-    const validProjects = results.items.map(item => item.project?.trim()).filter(p => p && p !== '-' && p !== 'Unassigned');
+    // Safely cast to string before trimming to prevent crash
+    const validProjects = results.items
+      .map(item => item.project ? String(item.project).trim() : '')
+      .filter(p => p !== '' && p !== '-' && p !== 'Unassigned');
+      
     if (validProjects.length === 0) return 'Unassigned';
     const uniqueProjects = [...new Set(validProjects)];
     return uniqueProjects.length === 1 ? uniqueProjects[0] : 'Mixed';
@@ -189,46 +220,46 @@ export default function App() {
                       return (
                         <tr key={i} style={{ borderBottom: '0.5px solid rgba(255,255,255,0.04)', background: isEditing ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
                           <td style={{ padding: '12px', fontSize: 13, color: 'rgba(220,230,255,0.9)', fontWeight: 500, minWidth: '160px' }}>
-                            {isEditing ? <input style={inputStyle} value={editFormData.description ?? ''} onChange={(e) => handleEditChange('description', e.target.value)} /> : item.description}
+                            {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.description)} onChange={(e) => handleEditChange('description', e.target.value)} /> : item.description}
                           </td>
                           <td style={{ padding: '12px', fontSize: 12, color: 'rgba(120,200,120,0.8)', minWidth: '110px' }}>
-                            {isEditing ? <input style={inputStyle} placeholder="Project Name" value={editFormData.project ?? ''} onChange={(e) => handleEditChange('project', e.target.value)} /> : (item.project || '-')}
+                            {isEditing ? <input style={inputStyle} placeholder="Project Name" value={getSafeVal(editFormData.project)} onChange={(e) => handleEditChange('project', e.target.value)} /> : (item.project || '-')}
                           </td>
                           <td style={{ padding: '12px', fontSize: 12, color: 'rgba(180,200,240,0.8)', fontFamily: 'monospace' }}>
-                            {isEditing ? <input style={inputStyle} value={editFormData.hsn_sac ?? ''} onChange={(e) => handleEditChange('hsn_sac', e.target.value)} /> : (item.hsn_sac || '-')}
+                            {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.hsn_sac)} onChange={(e) => handleEditChange('hsn_sac', e.target.value)} /> : (item.hsn_sac || '-')}
                           </td>
                           <td style={{ padding: '12px', minWidth: '100px' }}>
-                            {isEditing ? <input style={inputStyle} value={editFormData.type ?? ''} onChange={(e) => handleEditChange('type', e.target.value)} /> : <TypeBadge label={item.type} />}
+                            {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.type)} onChange={(e) => handleEditChange('type', e.target.value)} /> : <TypeBadge label={item.type} />}
                           </td>
                           <td style={{ padding: '12px', fontSize: 12, color: 'rgba(180,200,240,0.7)', minWidth: '100px' }}>
-                            {isEditing ? <input style={inputStyle} value={editFormData.sub_type ?? ''} onChange={(e) => handleEditChange('sub_type', e.target.value)} /> : (item.sub_type || '-')}
+                            {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.sub_type)} onChange={(e) => handleEditChange('sub_type', e.target.value)} /> : (item.sub_type || '-')}
                           </td>
                           <td style={{ padding: '12px', fontSize: 12, color: 'rgba(180,200,240,0.7)', width: '50px' }}>
-                            {isEditing ? <input style={inputStyle} value={editFormData.uom ?? ''} onChange={(e) => handleEditChange('uom', e.target.value)} /> : (item.uom || '-')}
+                            {isEditing ? <input style={inputStyle} value={getSafeVal(editFormData.uom)} onChange={(e) => handleEditChange('uom', e.target.value)} /> : (item.uom || '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: 'rgba(120,190,255,0.9)', fontSize: 13, width: '60px' }}>
-                            {isEditing ? <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.quantity ?? ''} onChange={(e) => handleEditChange('quantity', e.target.value)} /> : item.quantity}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.quantity)} onChange={(e) => handleEditChange('quantity', e.target.value)} /> : item.quantity}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', color: 'rgba(160,170,210,0.6)', fontSize: 12 }}>
-                            {isEditing ? <span style={{fontSize:10, color:'gray'}}>Auto</span> : `₹${Number(item.unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                            {isEditing ? <span style={{fontSize:10, color:'gray'}}>Auto</span> : `₹${parseNum(item.unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, color: 'rgba(200,210,240,0.85)', fontSize: 13 }}>
-                            {isEditing ? <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.amount ?? ''} onChange={(e) => handleEditChange('amount', e.target.value)} /> : `₹${Number(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.amount)} onChange={(e) => handleEditChange('amount', e.target.value)} /> : `₹${parseNum(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(180,200,240,0.7)', width: '50px' }}>
-                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={editFormData.tax_percentage ?? ''} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} /> : (item.tax_percentage ? `${item.tax_percentage}%` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.tax_percentage)} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} /> : (item.tax_percentage ? `${item.tax_percentage}%` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(200,100,100,0.8)' }}>
-                            {isEditing ? <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.cgst_amount ?? ''} onChange={(e) => handleEditChange('cgst_amount', e.target.value)} /> : (item.cgst_amount ? `₹${item.cgst_amount}` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.cgst_amount)} onChange={(e) => handleEditChange('cgst_amount', e.target.value)} /> : (item.cgst_amount ? `₹${item.cgst_amount}` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(100,200,100,0.8)' }}>
-                            {isEditing ? <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.sgst_amount ?? ''} onChange={(e) => handleEditChange('sgst_amount', e.target.value)} /> : (item.sgst_amount ? `₹${item.sgst_amount}` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.sgst_amount)} onChange={(e) => handleEditChange('sgst_amount', e.target.value)} /> : (item.sgst_amount ? `₹${item.sgst_amount}` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(100,150,255,0.8)' }}>
-                            {isEditing ? <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.igst_amount ?? ''} onChange={(e) => handleEditChange('igst_amount', e.target.value)} /> : (item.igst_amount ? `₹${item.igst_amount}` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.igst_amount)} onChange={(e) => handleEditChange('igst_amount', e.target.value)} /> : (item.igst_amount ? `₹${item.igst_amount}` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 13 }}>
-                            {isEditing ? <span style={{fontSize:10, color:'gray'}}>Auto</span> : `₹${Number(getItemTotalWithTax(item) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                            {isEditing ? <span style={{fontSize:10, color:'gray'}}>Auto</span> : `₹${getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'center', minWidth: '100px' }}>
                             {isEditing ? (
@@ -279,13 +310,13 @@ export default function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Base Amount:</span>
                     <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(200,210,240,0.85)' }}>
-                      ₹{results.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{results.items.reduce((sum, item) => sum + parseNum(item.amount), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Tax:</span>
                     <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(180,200,240,0.7)' }}>
-                      ₹{(results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0) - results.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{(results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0) - results.items.reduce((sum, item) => sum + parseNum(item.amount), 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px', marginTop: 8, paddingTop: 16, borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
@@ -304,9 +335,24 @@ export default function App() {
                 {savingDb ? 'Uploading...' : 'Upload to Database'}
               </button>
             </div>
+            
+            {Array.isArray(results.gstin_numbers) && results.gstin_numbers.length > 0 && (
+              <p style={{ marginTop: 12, textAlign: 'center', fontSize: 12, color: 'rgba(130,145,180,0.5)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                GSTIN: {results.gstin_numbers.join(' · ')}
+              </p>
+            )}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+// Ensure we export the wrapped component
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <MainApp />
+    </ErrorBoundary>
   );
 }
