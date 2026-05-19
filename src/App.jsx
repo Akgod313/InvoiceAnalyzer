@@ -90,7 +90,6 @@ function MainApp() {
     }
   };
 
-  // MULTI-FILE QUEUE PROCESSOR
   const analyzeBatch = async () => {
     if (files.length === 0) return alert('Please select files or a folder first');
     setLoading(true); setSaveMessage('');
@@ -224,7 +223,6 @@ function MainApp() {
               </div>
               
               <input type="file" accept="image/*" multiple style={{ display: 'none' }} ref={fileInputRef} onChange={(e) => setFiles(Array.from(e.target.files))} />
-              {/* webkitdirectory allows folder selection */}
               <input type="file" accept="image/*" multiple webkitdirectory="true" style={{ display: 'none' }} ref={folderInputRef} onChange={(e) => setFiles(Array.from(e.target.files).filter(f => f.type.startsWith('image/')))} />
               
               <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '16px 0 0' }}>
