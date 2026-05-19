@@ -119,6 +119,8 @@ function MainApp() {
   const handleEditClick = (index, item) => { setEditingIndex(index); setEditFormData({ ...item }); };
   const handleEditChange = (field, value) => { setEditFormData({ ...editFormData, [field]: value }); };
 
+  const handleCancelEdit = () => { setEditingIndex(null); setEditFormData({}); };
+
   const handleSaveEdit = () => {
     if (!results) return;
     const newItems = [...safeItems];
