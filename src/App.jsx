@@ -93,9 +93,27 @@ export default function App() {
     setEditingIndex(null); 
   };
 
+  // Logic to determine what Project to show in the global header
+  const getHeaderProjectDisplay = () => {
+    if (!results || !results.items || results.items.length === 0) return 'Unassigned';
+    
+    // Get all valid project names (ignoring empty ones)
+    const validProjects = results.items.map(item => item.project?.trim()).filter(p => p && p !== '-' && p !== 'Unassigned');
+    
+    if (validProjects.length === 0) return 'Unassigned';
+    
+    // Check if they are all identical
+    const uniqueProjects = [...new Set(validProjects)];
+    if (uniqueProjects.length === 1) {
+      return uniqueProjects[0];
+    } else {
+      return 'Mixed';
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 60% at 20% 10%, rgba(30,60,140,0.55) 0%, transparent 60%), radial-gradient(ellipse 70% 50% at 80% 80%, rgba(80,30,160,0.45) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 50% 50%, rgba(10,20,60,1) 0%, #050814 100%)', fontFamily: "'SF Pro Display', -apple-system, sans-serif", color: 'white', padding: '60px 24px 80px', boxSizing: 'border-box' }}>
-      <div style={{ maxWidth: 1300, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', position: 'relative', zIndex: 1 }}>
         
         <header style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'inline-block', marginBottom: 16, padding: '6px 18px', borderRadius: 999, background: 'linear-gradient(90deg, rgba(80,140,255,0.15), rgba(120,80,255,0.15))', border: '0.5px solid rgba(120,180,255,0.25)', fontSize: 12, letterSpacing: '0.15em', fontWeight: 600, color: 'rgba(160,200,255,0.8)' }}>
@@ -134,7 +152,7 @@ export default function App() {
                     INV NO: <span style={{color: 'white'}}>{results.invoice_no || 'N/A'}</span> &nbsp;|&nbsp; DATE: <span style={{color: 'white'}}>{results.invoice_date || 'N/A'}</span> &nbsp;|&nbsp; TYPE: <span style={{color: 'white'}}>{results.voucher_type || 'N/A'}</span>
                   </span>
                   <span style={{ fontSize: 11, color: 'rgba(140,160,200,0.5)', fontFamily: 'monospace' }}>
-                    PROJECT: <span style={{color: 'rgba(120,200,120,0.9)', fontWeight: 'bold'}}>{results.project || 'Unassigned'}</span> &nbsp;|&nbsp; PoS: {results.place_of_supply || 'N/A'}
+                    PROJECT: <span style={{color: getHeaderProjectDisplay() === 'Mixed' ? 'rgba(255,200,100,0.9)' : 'rgba(120,200,120,0.9)', fontWeight: 'bold'}}>{getHeaderProjectDisplay()}</span> &nbsp;|&nbsp; PoS: {results.place_of_supply || 'N/A'}
                   </span>
                 </div>
                 <span style={{ fontSize: 13, color: 'rgba(180,190,220,0.9)', textAlign: 'right' }}>
@@ -143,11 +161,11 @@ export default function App() {
               </div>
 
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1400 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1550 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      {['Item', 'HSN/SAC', 'Type', 'Sub-Type', 'UOM', 'Qty', 'Unit Price', 'Base Val', 'Tax %', 'CGST', 'SGST', 'IGST', 'Total', 'Actions'].map((h, i) => (
-                        <th key={h} style={{ padding: '12px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(140,170,220,0.6)', textTransform: 'uppercase', textAlign: (i >= 5 && i <= 12) ? 'right' : (i === 13 ? 'center' : 'left'), borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+                      {['Item', 'Project', 'HSN/SAC', 'Type', 'Sub-Type', 'UOM', 'Qty', 'Unit Price', 'Base Val', 'Tax %', 'CGST', 'SGST', 'IGST', 'Total', 'Actions'].map((h, i) => (
+                        <th key={h} style={{ padding: '12px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(140,170,220,0.6)', textTransform: 'uppercase', textAlign: (i >= 6 && i <= 13) ? 'right' : (i === 14 ? 'center' : 'left'), borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
                           {h}
                         </th>
                       ))}
@@ -161,6 +179,9 @@ export default function App() {
                           <td style={{ padding: '12px', fontSize: 13, color: 'rgba(220,230,255,0.9)', fontWeight: 500, minWidth: '160px' }}>
                             {isEditing ? <input style={inputStyle} value={editFormData.description || ''} onChange={(e) => handleEditChange('description', e.target.value)} /> : item.description}
                           </td>
+                          <td style={{ padding: '12px', fontSize: 12, color: 'rgba(120,200,120,0.8)', minWidth: '110px' }}>
+                            {isEditing ? <input style={inputStyle} placeholder="Project Name" value={editFormData.project || ''} onChange={(e) => handleEditChange('project', e.target.value)} /> : (item.project || '-')}
+                          </td>
                           <td style={{ padding: '12px', fontSize: 12, color: 'rgba(180,200,240,0.8)', fontFamily: 'monospace' }}>
                             {isEditing ? <input style={inputStyle} value={editFormData.hsn_sac || ''} onChange={(e) => handleEditChange('hsn_sac', e.target.value)} /> : (item.hsn_sac || '-')}
                           </td>
@@ -170,7 +191,7 @@ export default function App() {
                           <td style={{ padding: '12px', fontSize: 12, color: 'rgba(180,200,240,0.7)', minWidth: '100px' }}>
                             {isEditing ? <input style={inputStyle} value={editFormData.sub_type || ''} onChange={(e) => handleEditChange('sub_type', e.target.value)} /> : (item.sub_type || '-')}
                           </td>
-                          <td style={{ padding: '12px', fontSize: 12, color: 'rgba(180,200,240,0.7)', width: '60px' }}>
+                          <td style={{ padding: '12px', fontSize: 12, color: 'rgba(180,200,240,0.7)', width: '50px' }}>
                             {isEditing ? <input style={inputStyle} value={editFormData.uom || ''} onChange={(e) => handleEditChange('uom', e.target.value)} /> : (item.uom || '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: 'rgba(120,190,255,0.9)', fontSize: 13, width: '60px' }}>
@@ -182,7 +203,7 @@ export default function App() {
                           <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, color: 'rgba(200,210,240,0.85)', fontSize: 13 }}>
                             {isEditing ? <input type="number" style={{...inputStyle, textAlign: 'right'}} value={editFormData.amount || ''} onChange={(e) => handleEditChange('amount', e.target.value)} /> : `₹${(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
                           </td>
-                          <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(180,200,240,0.7)', width: '60px' }}>
+                          <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(180,200,240,0.7)', width: '50px' }}>
                             {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={editFormData.tax_percentage || ''} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} /> : (item.tax_percentage ? `${item.tax_percentage}%` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(200,100,100,0.8)' }}>
@@ -214,26 +235,8 @@ export default function App() {
                 </table>
               </div>
 
-              {/* UPGRADED FOOTER WITH PROJECT INPUT */}
-              <div style={{ padding: '20px 24px', borderTop: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', background: 'rgba(255,255,255,0.015)' }}>
-                
-                {/* Left Side: Assign Project */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 4 }}>
-                  <label style={{ fontSize: 12, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.08em', fontWeight: 600, textTransform: 'uppercase' }}>
-                    Assign to Project
-                  </label>
-                  <input
-                    style={{ ...inputStyle, width: '280px', padding: '10px 14px', fontSize: 14, background: 'rgba(0,0,0,0.3)' }}
-                    placeholder="e.g., Villa 44, Kitchen Reno..."
-                    value={results.project || ''}
-                    onChange={(e) => setResults({ ...results, project: e.target.value })}
-                  />
-                  <span style={{ fontSize: 11, color: 'rgba(120,140,180,0.5)' }}>
-                    *This project name will be attached to every item in the database.
-                  </span>
-                </div>
-
-                {/* Right Side: Totals */}
+              {/* CLEAN FOOTER - TOTALS ONLY */}
+              <div style={{ padding: '20px 24px', borderTop: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end', background: 'rgba(255,255,255,0.015)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Base Amount:</span>
