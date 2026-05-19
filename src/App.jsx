@@ -20,7 +20,7 @@ const parseNum = (val) => {
   return isNaN(num) ? 0 : num;
 };
 
-// --- ERROR BOUNDARY (Prevents White Screens) ---
+// --- ERROR BOUNDARY ---
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null, info: null }; }
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
@@ -76,6 +76,9 @@ function MainApp() {
   const [saveMessage, setSaveMessage] = useState('');
   const [globalProject, setGlobalProject] = useState('');
 
+  // 🔥 THE FIX: This ensures `items` is ALWAYS a valid array, never null.
+  const safeItems = Array.isArray(results?.items) ? results.items : [];
+
   const handleDrop = (e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); };
 
   const analyzeQuote = async () => {
@@ -94,7 +97,7 @@ function MainApp() {
   };
 
   const handleUploadToDatabase = async () => {
-    if (!results || !results.items) return;
+    if (!results || safeItems.length === 0) return;
     setSavingDb(true); setSaveMessage('');
     try {
       const response = await fetch('https://invoiceanalyzerbackend.onrender.com/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(results) });
@@ -106,10 +109,10 @@ function MainApp() {
   };
 
   const getItemTotalWithTax = (item) => {
-    const base = parseNum(item.amount);
-    const cgst = parseNum(item.cgst_amount);
-    const sgst = parseNum(item.sgst_amount);
-    const igst = parseNum(item.igst_amount);
+    const base = parseNum(item?.amount);
+    const cgst = parseNum(item?.cgst_amount);
+    const sgst = parseNum(item?.sgst_amount);
+    const igst = parseNum(item?.igst_amount);
     return base + cgst + sgst + igst;
   };
 
@@ -117,7 +120,8 @@ function MainApp() {
   const handleEditChange = (field, value) => { setEditFormData({ ...editFormData, [field]: value }); };
 
   const handleSaveEdit = () => {
-    const newItems = [...results.items];
+    if (!results) return;
+    const newItems = [...safeItems];
     const updatedItem = { ...editFormData };
     
     // Safety Parsing: Convert inputs to raw numbers cleanly
@@ -136,16 +140,15 @@ function MainApp() {
   };
 
   const applyProjectToAll = () => {
-    if (!results || !results.items) return;
-    const updatedItems = results.items.map(item => ({ ...item, project: globalProject }));
+    if (!results) return;
+    const updatedItems = safeItems.map(item => ({ ...item, project: globalProject }));
     setResults({ ...results, items: updatedItems });
     setGlobalProject(''); 
   };
 
   const getHeaderProjectDisplay = () => {
-    if (!results || !results.items || results.items.length === 0) return 'Unassigned';
-    // Safely cast to string before trimming to prevent crash
-    const validProjects = results.items
+    if (safeItems.length === 0) return 'Unassigned';
+    const validProjects = safeItems
       .map(item => item.project ? String(item.project).trim() : '')
       .filter(p => p !== '' && p !== '-' && p !== 'Unassigned');
       
@@ -182,14 +185,14 @@ function MainApp() {
           </GlassCard>
         </div>
 
-        {results?.items?.length > 0 && (
+        {safeItems.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <GlassCard style={{ padding: 0, overflow: 'hidden' }}>
               
               <div style={{ padding: '16px 24px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
-                    {results.vendor_name || 'Vendor Details'} · {results.items.length} items
+                    {results.vendor_name || 'Vendor Details'} · {safeItems.length} items
                   </span>
                   <span style={{ fontSize: 11, color: 'rgba(140,160,200,0.7)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
                     INV NO: <span style={{color: 'white'}}>{results.invoice_no || 'N/A'}</span> &nbsp;|&nbsp; DATE: <span style={{color: 'white'}}>{results.invoice_date || 'N/A'}</span> &nbsp;|&nbsp; TYPE: <span style={{color: 'white'}}>{results.voucher_type || 'N/A'}</span>
@@ -215,7 +218,7 @@ function MainApp() {
                     </tr>
                   </thead>
                   <tbody>
-                    {results.items.map((item, i) => {
+                    {safeItems.map((item, i) => {
                       const isEditing = editingIndex === i;
                       return (
                         <tr key={i} style={{ borderBottom: '0.5px solid rgba(255,255,255,0.04)', background: isEditing ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
@@ -310,19 +313,19 @@ function MainApp() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Base Amount:</span>
                     <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(200,210,240,0.85)' }}>
-                      ₹{results.items.reduce((sum, item) => sum + parseNum(item.amount), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{safeItems.reduce((sum, item) => sum + parseNum(item.amount), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Tax:</span>
                     <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(180,200,240,0.7)' }}>
-                      ₹{(results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0) - results.items.reduce((sum, item) => sum + parseNum(item.amount), 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{(safeItems.reduce((sum, item) => sum + getItemTotalWithTax(item), 0) - safeItems.reduce((sum, item) => sum + parseNum(item.amount), 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px', marginTop: 8, paddingTop: 16, borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
                     <span style={{ fontSize: 15, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>Grand Total:</span>
                     <span style={{ fontSize: 24, fontWeight: 800, color: 'white' }}>
-                      ₹{results.items.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{safeItems.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
@@ -348,7 +351,6 @@ function MainApp() {
   );
 }
 
-// Ensure we export the wrapped component
 export default function App() {
   return (
     <ErrorBoundary>
