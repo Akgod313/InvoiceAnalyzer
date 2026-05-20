@@ -302,13 +302,13 @@ function MainApp() {
                             {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.tax_percentage)} onChange={(e) => handleEditChange('tax_percentage', e.target.value)} /> : (item.tax_percentage ? `${item.tax_percentage}%` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(200,100,100,0.8)' }}>
-                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.cgst_amount)} onChange={(e) => handleEditChange('cgst_amount', e.target.value)} /> : (item.cgst_amount ? `₹${item.cgst_amount}` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.cgst_amount)} onChange={(e) => handleEditChange('cgst_amount', e.target.value)} /> : (item.cgst_amount ? `${item.cgst_amount}%` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(100,200,100,0.8)' }}>
-                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.sgst_amount)} onChange={(e) => handleEditChange('sgst_amount', e.target.value)} /> : (item.sgst_amount ? `₹${item.sgst_amount}` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.sgst_amount)} onChange={(e) => handleEditChange('sgst_amount', e.target.value)} /> : (item.sgst_amount ? `${item.sgst_amount}%` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontSize: 12, color: 'rgba(100,150,255,0.8)' }}>
-                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.igst_amount)} onChange={(e) => handleEditChange('igst_amount', e.target.value)} /> : (item.igst_amount ? `₹${item.igst_amount}` : '-')}
+                            {isEditing ? <input style={{...inputStyle, textAlign: 'right'}} value={getSafeVal(editFormData.igst_amount)} onChange={(e) => handleEditChange('igst_amount', e.target.value)} /> : (item.igst_amount ? `${item.igst_amount}%` : '-')}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: 'rgba(240,245,255,0.95)', fontSize: 13 }}>
                             {isEditing ? <span style={{fontSize:10, color:'gray'}}>Auto</span> : `₹${getItemTotalWithTax(item).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
