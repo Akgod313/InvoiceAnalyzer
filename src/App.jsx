@@ -110,16 +110,12 @@ function MainApp() {
 
   const getItemTotalWithTax = (item) => {
     const base = parseNum(item?.amount);
-    const cgst = parseNum(item?.cgst_amount);
-    const sgst = parseNum(item?.sgst_amount);
-    const igst = parseNum(item?.igst_amount);
-    return base + cgst + sgst + igst;
+    const taxPct = parseNum(item?.tax_percentage);
+    return base + (base * taxPct / 100);
   };
 
   const handleEditClick = (index, item) => { setEditingIndex(index); setEditFormData({ ...item }); };
   const handleEditChange = (field, value) => { setEditFormData({ ...editFormData, [field]: value }); };
-
-  const handleCancelEdit = () => { setEditingIndex(null); setEditFormData({}); };
 
   const handleSaveEdit = () => {
     if (!results) return;
