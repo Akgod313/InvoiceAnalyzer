@@ -356,19 +356,19 @@ function MainApp() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Base Amount:</span>
                     <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(200,210,240,0.85)' }}>
-                      %{safeItems.reduce((sum, item) => sum + parseNum(item.amount), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {safeItems.reduce((sum, item) => sum + parseNum(item.amount), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px' }}>
                     <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.05em' }}>Total Tax:</span>
                     <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(180,200,240,0.7)' }}>
-                      %{(safeItems.reduce((sum, item) => sum + getItemTotalWithTax(item), 0) - safeItems.reduce((sum, item) => sum + parseNum(item.amount), 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {(safeItems.reduce((sum, item) => sum + getItemTotalWithTax(item), 0) - safeItems.reduce((sum, item) => sum + parseNum(item.amount), 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '320px', marginTop: 8, paddingTop: 16, borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
                     <span style={{ fontSize: 15, color: 'white', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>Grand Batch Total:</span>
                     <span style={{ fontSize: 24, fontWeight: 800, color: 'white' }}>
-                      %{safeItems.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {safeItems.reduce((sum, item) => sum + getItemTotalWithTax(item), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                     </span>
                   </div>
                 </div>
