@@ -4,6 +4,11 @@ import {useDropzone} from 'react-dropzone'
 
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
 
+const onDrop = useCallback(acceptedFiles => {
+// Do something with the files
+}, [])
+const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+
 const glassStyle = {
   position: 'relative',
   background: 'linear-gradient(135deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.04) 60%, rgba(180,200,255,0.07) 100%)',
@@ -85,12 +90,6 @@ function Pill({ label, color = 'rgba(180,200,240,0.7)' }) {
   );
 }
 
-function MyDropzone() {
-  const onDrop = useCallback(acceptedFiles => {
-    // Do something with the files
-  }, [])
-  const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
-}
 
 // Column groups for the table header
 const COL_GROUPS = [
