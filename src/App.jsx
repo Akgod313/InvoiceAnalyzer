@@ -498,6 +498,7 @@ function MainApp() {
                 >
                   Select Folder
                 </button>
+                <button onClick={() => fileInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(100,160,255,0.15)', borderColor: 'rgba(100,160,255,0.3)' }}>Select Files</button>
               </div>
               <input
                 type="file"
