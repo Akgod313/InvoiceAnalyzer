@@ -1,13 +1,7 @@
 import React, { useState, Component, useRef, useEffect, useCallback } from 'react';
-import {useDropzone} from 'react-dropzone'
-
+import { useDropzone } from 'react-dropzone';
 
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
-
-const onDrop = useCallback(acceptedFiles => {
-// Do something with the files
-}, [])
-const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
 
 const glassStyle = {
   position: 'relative',
@@ -90,7 +84,6 @@ function Pill({ label, color = 'rgba(180,200,240,0.7)' }) {
   );
 }
 
-
 // Column groups for the table header
 const COL_GROUPS = [
   { label: 'DOCUMENT', span: 4, color: 'rgba(100,160,255,0.5)' },
@@ -102,65 +95,55 @@ const COL_GROUPS = [
 ];
 
 const COLS = [
-  // DOCUMENT
-  { key: 'invoice_date',    label: 'Inv Date',     align: 'left',  minW: 90  },
-  { key: 'invoice_no',      label: 'Inv No',       align: 'left',  minW: 100, mono: true },
-  { key: 'voucher_type',    label: 'Type',         align: 'left',  minW: 80  },
-  { key: 'po_number',       label: 'PO No',        align: 'left',  minW: 80, mono: true },
-  // SUPPLIER
-  { key: 'vendor_name',     label: 'Vendor',       align: 'left',  minW: 130 },
-  { key: 'place_of_supply', label: 'State',        align: 'left',  minW: 80  },
-  // ITEM / LINE
-  { key: 'description',     label: 'Item',         align: 'left',  minW: 170 },
-  { key: 'project',         label: 'Project',      align: 'left',  minW: 110 },
-  { key: 'hsn_sac',         label: 'HSN/SAC',      align: 'left',  minW: 80, mono: true },
-  { key: 'type',            label: 'Type',         align: 'left',  minW: 100 },
-  { key: 'sub_type',        label: 'Sub-Type',     align: 'left',  minW: 100 },
-  { key: 'uom',             label: 'UOM',          align: 'left',  minW: 50  },
-  { key: 'quantity',        label: 'Qty',          align: 'right', minW: 55  },
-  { key: 'unit_price',      label: 'Unit Price',   align: 'right', minW: 90  },
-  { key: 'amount',          label: 'Base Amt',     align: 'right', minW: 90  },
-  // TAX
-  { key: 'discount_pct',       label: 'Disc %',    align: 'right', minW: 55  },
-  { key: 'base_taxable_value', label: 'Taxable',   align: 'right', minW: 90  },
-  { key: 'intra_or_inter',     label: 'Intra/Inter', align: 'center', minW: 70 },
-  { key: 'cgst_amount',     label: 'CGST %',       align: 'right', minW: 60  },
-  { key: 'sgst_amount',     label: 'SGST %',       align: 'right', minW: 60  },
-  { key: 'igst_amount',     label: 'IGST %',       align: 'right', minW: 60  },
-  { key: 'total_gst',       label: 'Total GST ₹',  align: 'right', minW: 90  },
-  // LEDGER
-  { key: 'ledger_account',  label: 'Ledger Acct',  align: 'left',  minW: 130 },
-  { key: 'itc_eligible',    label: 'ITC',          align: 'center',minW: 50  },
-  { key: 'nature_of_expense', label: 'Nature',     align: 'left',  minW: 120 },
-  // ACTIONS
-  { key: '_actions',        label: 'Actions',      align: 'center',minW: 100 },
+  { key: 'invoice_date',       label: 'Inv Date',    align: 'left',   minW: 90  },
+  { key: 'invoice_no',         label: 'Inv No',      align: 'left',   minW: 100, mono: true },
+  { key: 'voucher_type',       label: 'Type',        align: 'left',   minW: 80  },
+  { key: 'po_number',          label: 'PO No',       align: 'left',   minW: 80,  mono: true },
+  { key: 'vendor_name',        label: 'Vendor',      align: 'left',   minW: 130 },
+  { key: 'place_of_supply',    label: 'State',       align: 'left',   minW: 80  },
+  { key: 'description',        label: 'Item',        align: 'left',   minW: 170 },
+  { key: 'project',            label: 'Project',     align: 'left',   minW: 110 },
+  { key: 'hsn_sac',            label: 'HSN/SAC',     align: 'left',   minW: 80,  mono: true },
+  { key: 'type',               label: 'Type',        align: 'left',   minW: 100 },
+  { key: 'sub_type',           label: 'Sub-Type',    align: 'left',   minW: 100 },
+  { key: 'uom',                label: 'UOM',         align: 'left',   minW: 50  },
+  { key: 'quantity',           label: 'Qty',         align: 'right',  minW: 55  },
+  { key: 'unit_price',         label: 'Unit Price',  align: 'right',  minW: 90  },
+  { key: 'amount',             label: 'Base Amt',    align: 'right',  minW: 90  },
+  { key: 'discount_pct',       label: 'Disc %',      align: 'right',  minW: 55  },
+  { key: 'base_taxable_value', label: 'Taxable',     align: 'right',  minW: 90  },
+  { key: 'intra_or_inter',     label: 'Intra/Inter', align: 'center', minW: 70  },
+  { key: 'cgst_amount',        label: 'CGST %',      align: 'right',  minW: 60  },
+  { key: 'sgst_amount',        label: 'SGST %',      align: 'right',  minW: 60  },
+  { key: 'igst_amount',        label: 'IGST %',      align: 'right',  minW: 60  },
+  { key: 'total_gst',          label: 'Total GST ₹', align: 'right',  minW: 90  },
+  { key: 'ledger_account',     label: 'Ledger Acct', align: 'left',   minW: 130 },
+  { key: 'itc_eligible',       label: 'ITC',         align: 'center', minW: 50  },
+  { key: 'nature_of_expense',  label: 'Nature',      align: 'left',   minW: 120 },
+  { key: '_actions',           label: 'Actions',     align: 'center', minW: 100 },
 ];
 
-// Fields that show as ₹ values
 const RUPEE_FIELDS = new Set(['unit_price','amount','base_taxable_value','total_gst']);
-// Fields that show as % values
 const PCT_FIELDS   = new Set(['cgst_amount','sgst_amount','igst_amount','discount_pct']);
 
 // --- MAIN APP ---
 function MainApp() {
-  const [files, setFiles]               = useState([]);
-  const [results, setResults]           = useState({ items: [] });
-  const [loading, setLoading]           = useState(false);
-  const [progressMsg, setProgressMsg]   = useState('');
-  const [dragOver, setDragOver]         = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editFormData, setEditFormData] = useState({});
-  const [savingDb, setSavingDb]         = useState(false);
-  const [saveMessage, setSaveMessage]   = useState('');
-  const [globalProject, setGlobalProject] = useState('');
-  const [retrieveLimit, setRetrieveLimit]     = useState('');
-  const [retrieveVendor, setRetrieveVendor]   = useState('');
-  const [retrieveItem, setRetrieveItem]       = useState('');
-  const [retrieving, setRetrieving]           = useState(false);
-  const [retrieveError, setRetrieveError]     = useState('');
+  const [files, setFiles]                   = useState([]);
+  const [results, setResults]               = useState({ items: [] });
+  const [loading, setLoading]               = useState(false);
+  const [progressMsg, setProgressMsg]       = useState('');
+  const [editingIndex, setEditingIndex]     = useState(null);
+  const [editFormData, setEditFormData]     = useState({});
+  const [savingDb, setSavingDb]             = useState(false);
+  const [saveMessage, setSaveMessage]       = useState('');
+  const [globalProject, setGlobalProject]   = useState('');
+  const [retrieveLimit, setRetrieveLimit]   = useState('');
+  const [retrieveVendor, setRetrieveVendor] = useState('');
+  const [retrieveItem, setRetrieveItem]     = useState('');
+  const [retrieving, setRetrieving]         = useState(false);
+  const [retrieveError, setRetrieveError]   = useState('');
 
   const folderInputRef = useRef(null);
-  const fileInputRef   = useRef(null);
 
   // Load SheetJS from CDN once on mount
   useEffect(() => {
@@ -173,16 +156,26 @@ function MainApp() {
 
   const safeItems = Array.isArray(results?.items) ? results.items : [];
 
-  const handleDrop = (e) => {
-    e.preventDefault(); setDragOver(false);
-    if (e.dataTransfer.files?.length > 0) {
-      setFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
-    }
-  };
+  // --- react-dropzone (inside component, correct) ---
+  const onDrop = useCallback((acceptedFiles) => {
+    const images = acceptedFiles.filter(f => f.type.startsWith('image/'));
+    setFiles(prev => [...prev, ...images]);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': [] },
+    noClick: false,
+    noKeyboard: false,
+  });
 
   const analyzeBatch = async () => {
-    if (files.length === 0) return alert('Please select files or a folder first');
-    setLoading(true); setSaveMessage('');
+    if (files.length === 0) {
+      alert('Please select files or a folder first');
+      return;
+    }
+    setLoading(true);
+    setSaveMessage('');
     let accumulatedItems = [...safeItems];
 
     for (let i = 0; i < files.length; i++) {
@@ -195,10 +188,8 @@ function MainApp() {
         const data = await response.json();
 
         if (data && Array.isArray(data.items)) {
-          // Inject ALL top-level invoice fields into every line item
           const enrichedItems = data.items.map(item => ({
             ...item,
-            // DOCUMENT
             invoice_date:        data.invoice_date        || 'N/A',
             invoice_no:          data.invoice_no          || 'N/A',
             voucher_type:        data.voucher_type        || 'N/A',
@@ -206,7 +197,6 @@ function MainApp() {
             reverse_charge:      data.reverse_charge      || 'No',
             paid_to:             data.paid_to             || '',
             place_of_supply:     data.place_of_supply     || 'N/A',
-            // SUPPLIER
             vendor_name:         data.vendor_name         || 'Unknown Vendor',
             vendor_address:      data.vendor_address      || '',
             supplier_gstin:      data.supplier_gstin      || '',
@@ -217,7 +207,6 @@ function MainApp() {
             supplier_phone:      data.supplier_phone      || null,
             gstin_numbers:       data.gstin_numbers       || [],
           }));
-
           accumulatedItems = [...accumulatedItems, ...enrichedItems];
           setResults({ items: accumulatedItems });
         }
@@ -233,7 +222,8 @@ function MainApp() {
 
   const handleUploadToDatabase = async () => {
     if (!results || safeItems.length === 0) return;
-    setSavingDb(true); setSaveMessage('');
+    setSavingDb(true);
+    setSaveMessage('');
     try {
       const response = await fetch('https://invoiceanalyzerbackend.onrender.com/save', {
         method: 'POST',
@@ -249,100 +239,86 @@ function MainApp() {
     }
   };
 
+  const getItemTotalWithTax = (item) => {
+    const base   = parseNum(item?.base_taxable_value) || parseNum(item?.amount);
+    const taxPct = parseNum(item?.tax_percentage);
+    return base + (base * taxPct / 100);
+  };
+
   const downloadXlsx = () => {
     if (safeItems.length === 0) return;
     const XLSX = window.XLSX;
-    if (!XLSX) return alert('Excel library still loading, please try again in a moment.');
+    if (!XLSX) {
+      alert('Excel library still loading, please try again in a moment.');
+      return;
+    }
 
-    // Map items to flat rows matching the XLSX backbone column order
     const rows = safeItems.map(item => ({
-      // DOCUMENT
-      'Invoice Date':       item.invoice_date      || '',
-      'Invoice No':         item.invoice_no         || '',
-      'Voucher Type':       item.voucher_type       || '',
-      'PO Number':          item.po_number          || '',
-      'Reverse Charge':     item.reverse_charge     || 'No',
-      'Paid To':            item.paid_to            || '',
-      'Place of Supply':    item.place_of_supply    || '',
-      // SUPPLIER
-      'Vendor Name':        item.vendor_name        || '',
-      'Vendor Address':     item.vendor_address     || '',
-      'Supplier GSTIN':     item.supplier_gstin     || '',
-      'Supplier PAN':       item.supplier_pan       || '',
-      'Supplier State':     item.supplier_state     || '',
-      'Supplier State Code':item.supplier_state_code|| '',
-      'Supplier Email':     item.supplier_email     || '',
-      'Supplier Phone':     item.supplier_phone     || '',
-      'GSTIN Numbers':      Array.isArray(item.gstin_numbers) ? item.gstin_numbers.join(', ') : (item.gstin_numbers || ''),
-      // ITEM / LINE
-      'Description':        item.description        || '',
-      'HSN/SAC':            item.hsn_sac            || '',
-      'Type':               item.type               || '',
-      'Sub Type':           item.sub_type           || '',
-      'UOM':                item.uom                || '',
-      'Quantity':           parseNum(item.quantity),
-      'Unit Price':         parseNum(item.unit_price),
-      'Discount %':         parseNum(item.discount_pct),
-      'Discount Amount':    parseNum(item.discount_amount),
-      'Base Amount':        parseNum(item.amount),
-      'Base Taxable Value': parseNum(item.base_taxable_value) || parseNum(item.amount),
-      'Project':            item.project            || '',
-      'Project Phase':      item.project_phase      || '',
-      'Nature of Expense':  item.nature_of_expense  || '',
-      // TAX
-      'GST Rate %':         parseNum(item.tax_percentage),
-      'Intra / Inter':      item.intra_or_inter     || '',
-      'CGST %':             parseNum(item.cgst_amount),
-      'SGST %':             parseNum(item.sgst_amount),
-      'IGST %':             parseNum(item.igst_amount),
-      'CGST ₹':             parseNum(item.cgst_rupee),
-      'SGST ₹':             parseNum(item.sgst_rupee),
-      'IGST ₹':             parseNum(item.igst_rupee),
-      'Cess %':             parseNum(item.cess_pct),
-      'Cess ₹':             parseNum(item.cess_amount),
-      'Total GST ₹':        parseNum(item.total_gst),
-      'Total (incl. Tax)':  getItemTotalWithTax(item),
-      // LEDGER
-      'Ledger Account':     item.ledger_account     || '',
-      'Ledger Group':       item.ledger_group       || '',
-      'ITC Eligible':       item.itc_eligible       || 'Yes',
-      'ITC Eligible %':     parseNum(item.itc_eligible_pct) || 100,
+      'Invoice Date':        item.invoice_date       || '',
+      'Invoice No':          item.invoice_no          || '',
+      'Voucher Type':        item.voucher_type        || '',
+      'PO Number':           item.po_number           || '',
+      'Reverse Charge':      item.reverse_charge      || 'No',
+      'Paid To':             item.paid_to             || '',
+      'Place of Supply':     item.place_of_supply     || '',
+      'Vendor Name':         item.vendor_name         || '',
+      'Vendor Address':      item.vendor_address      || '',
+      'Supplier GSTIN':      item.supplier_gstin      || '',
+      'Supplier PAN':        item.supplier_pan        || '',
+      'Supplier State':      item.supplier_state      || '',
+      'Supplier State Code': item.supplier_state_code || '',
+      'Supplier Email':      item.supplier_email      || '',
+      'Supplier Phone':      item.supplier_phone      || '',
+      'GSTIN Numbers':       Array.isArray(item.gstin_numbers) ? item.gstin_numbers.join(', ') : (item.gstin_numbers || ''),
+      'Description':         item.description         || '',
+      'HSN/SAC':             item.hsn_sac             || '',
+      'Type':                item.type                || '',
+      'Sub Type':            item.sub_type            || '',
+      'UOM':                 item.uom                 || '',
+      'Quantity':            parseNum(item.quantity),
+      'Unit Price':          parseNum(item.unit_price),
+      'Discount %':          parseNum(item.discount_pct),
+      'Discount Amount':     parseNum(item.discount_amount),
+      'Base Amount':         parseNum(item.amount),
+      'Base Taxable Value':  parseNum(item.base_taxable_value) || parseNum(item.amount),
+      'Project':             item.project             || '',
+      'Project Phase':       item.project_phase       || '',
+      'Nature of Expense':   item.nature_of_expense   || '',
+      'GST Rate %':          parseNum(item.tax_percentage),
+      'Intra / Inter':       item.intra_or_inter      || '',
+      'CGST %':              parseNum(item.cgst_amount),
+      'SGST %':              parseNum(item.sgst_amount),
+      'IGST %':              parseNum(item.igst_amount),
+      'CGST ₹':              parseNum(item.cgst_rupee),
+      'SGST ₹':              parseNum(item.sgst_rupee),
+      'IGST ₹':              parseNum(item.igst_rupee),
+      'Cess %':              parseNum(item.cess_pct),
+      'Cess ₹':              parseNum(item.cess_amount),
+      'Total GST ₹':         parseNum(item.total_gst),
+      'Total (incl. Tax)':   getItemTotalWithTax(item),
+      'Ledger Account':      item.ledger_account      || '',
+      'Ledger Group':        item.ledger_group        || '',
+      'ITC Eligible':        item.itc_eligible        || 'Yes',
+      'ITC Eligible %':      parseNum(item.itc_eligible_pct) || 100,
     }));
 
     const ws = XLSX.utils.json_to_sheet(rows);
-
-    // Column widths
-    const colWidths = [
-      14, 16, 14, 12, 14, 20, 16,   // DOCUMENT
-      22, 30, 18, 14, 16, 14, 22, 16, 28, // SUPPLIER
-      28, 12, 16, 16, 8, 8, 10, 10, 10, 12, 16, 20, 16, 20, // ITEM
-      10, 12, 8, 8, 8, 10, 10, 10, 8, 8, 12, 16, // TAX
-      22, 18, 12, 12, // LEDGER
-    ];
+    const colWidths = [14,16,14,12,14,20,16,22,30,18,14,16,14,22,16,28,28,12,16,16,8,8,10,10,10,12,16,20,16,20,10,12,8,8,8,10,10,10,8,8,12,16,22,18,12,12];
     ws['!cols'] = colWidths.map(w => ({ wch: w }));
-
-    // Style header row bold
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    for (let C = range.s.c; C <= range.e.c; C++) {
-      const cellAddr = XLSX.utils.encode_cell({ r: 0, c: C });
-      if (!ws[cellAddr]) continue;
-      ws[cellAddr].s = { font: { bold: true } };
-    }
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Invoice Batch');
 
-    // Summary sheet
-    const totalBase  = safeItems.reduce((s, i) => s + (parseNum(i.base_taxable_value) || parseNum(i.amount)), 0);
-    const totalGst   = safeItems.reduce((s, i) => s + parseNum(i.total_gst), 0);
-    const grandTotal = safeItems.reduce((s, i) => s + getItemTotalWithTax(i), 0);
-    const uniqueInvoices = [...new Set(safeItems.map(i => i.invoice_no))];
+    const totalBase    = safeItems.reduce((s, i) => s + (parseNum(i.base_taxable_value) || parseNum(i.amount)), 0);
+    const totalGstSum  = safeItems.reduce((s, i) => s + parseNum(i.total_gst), 0);
+    const grandTotal   = safeItems.reduce((s, i) => s + getItemTotalWithTax(i), 0);
+    const uniqueInvs   = [...new Set(safeItems.map(i => i.invoice_no))];
 
     const summaryRows = [
       { 'Summary': 'Total Line Items',    'Value': safeItems.length },
-      { 'Summary': 'Unique Invoices',     'Value': uniqueInvoices.length },
+      { 'Summary': 'Unique Invoices',     'Value': uniqueInvs.length },
       { 'Summary': 'Total Base Amount',   'Value': totalBase },
-      { 'Summary': 'Total GST',           'Value': totalGst },
+      { 'Summary': 'Total GST',           'Value': totalGstSum },
       { 'Summary': 'Grand Total (w/Tax)', 'Value': grandTotal },
     ];
     const ws2 = XLSX.utils.json_to_sheet(summaryRows);
@@ -386,18 +362,12 @@ function MainApp() {
     }
   };
 
-  const getItemTotalWithTax = (item) => {
-    const base   = parseNum(item?.base_taxable_value) || parseNum(item?.amount);
-    const taxPct = parseNum(item?.tax_percentage);
-    return base + (base * taxPct / 100);
-  };
-
   const handleEditClick  = (index, item) => { setEditingIndex(index); setEditFormData({ ...item }); };
-  const handleEditChange = (field, value) => setEditFormData({ ...editFormData, [field]: value });
+  const handleEditChange = (field, value) => setEditFormData(prev => ({ ...prev, [field]: value }));
   const handleCancelEdit = () => { setEditingIndex(null); setEditFormData({}); };
 
   const handleSaveEdit = () => {
-    const newItems   = [...safeItems];
+    const newItems    = [...safeItems];
     const updatedItem = { ...editFormData };
     updatedItem.quantity           = parseNum(updatedItem.quantity) || 1;
     updatedItem.amount             = parseNum(updatedItem.amount);
@@ -410,10 +380,10 @@ function MainApp() {
     updatedItem.sgst_amount        = parseNum(updatedItem.sgst_amount);
     updatedItem.igst_amount        = parseNum(updatedItem.igst_amount);
     const btv = updatedItem.base_taxable_value;
-    updatedItem.cgst_rupee  = parseNum(((btv * updatedItem.cgst_amount) / 100).toFixed(2));
-    updatedItem.sgst_rupee  = parseNum(((btv * updatedItem.sgst_amount) / 100).toFixed(2));
-    updatedItem.igst_rupee  = parseNum(((btv * updatedItem.igst_amount) / 100).toFixed(2));
-    updatedItem.total_gst   = parseNum((updatedItem.cgst_rupee + updatedItem.sgst_rupee + updatedItem.igst_rupee).toFixed(2));
+    updatedItem.cgst_rupee = parseNum(((btv * updatedItem.cgst_amount) / 100).toFixed(2));
+    updatedItem.sgst_rupee = parseNum(((btv * updatedItem.sgst_amount) / 100).toFixed(2));
+    updatedItem.igst_rupee = parseNum(((btv * updatedItem.igst_amount) / 100).toFixed(2));
+    updatedItem.total_gst  = parseNum((updatedItem.cgst_rupee + updatedItem.sgst_rupee + updatedItem.igst_rupee).toFixed(2));
     newItems[editingIndex] = updatedItem;
     setResults({ items: newItems });
     setEditingIndex(null);
@@ -426,28 +396,25 @@ function MainApp() {
   };
 
   const uniqueInvoicesCount = new Set(safeItems.map(item => item.invoice_no)).size;
-  const totalBase   = safeItems.reduce((s, i) => s + parseNum(i.base_taxable_value || i.amount), 0);
-  const totalGst    = safeItems.reduce((s, i) => s + parseNum(i.total_gst), 0);
-  const grandTotal  = safeItems.reduce((s, i) => s + getItemTotalWithTax(i), 0);
+  const totalBase  = safeItems.reduce((s, i) => s + parseNum(i.base_taxable_value || i.amount), 0);
+  const totalGst   = safeItems.reduce((s, i) => s + parseNum(i.total_gst), 0);
+  const grandTotal = safeItems.reduce((s, i) => s + getItemTotalWithTax(i), 0);
 
-  // Render a single cell value
   const renderCellValue = (col, item) => {
     const val = item[col.key];
-    if (col.key === 'type')         return <TypeBadge label={val} />;
-    if (col.key === 'itc_eligible') return <Pill label={val || 'Yes'} color={val === 'No' ? 'rgba(255,120,120,0.7)' : 'rgba(80,220,120,0.7)'} />;
+    if (col.key === 'type')           return <TypeBadge label={val} />;
+    if (col.key === 'itc_eligible')   return <Pill label={val || 'Yes'} color={val === 'No' ? 'rgba(255,120,120,0.7)' : 'rgba(80,220,120,0.7)'} />;
     if (col.key === 'intra_or_inter') return <Pill label={val || 'Intra'} color={val === 'Inter' ? 'rgba(255,180,80,0.7)' : 'rgba(120,180,255,0.7)'} />;
     if (col.key === 'reverse_charge') return val === 'Yes' ? <Pill label="RCM" color="rgba(255,120,80,0.8)" /> : '-';
-    if (RUPEE_FIELDS.has(col.key))  return `₹${fmt(val)}`;
-    if (PCT_FIELDS.has(col.key))    return fmtPct(val);
-    if (col.key === 'quantity')     return <span style={{ fontWeight: 700, color: 'rgba(120,190,255,0.9)' }}>{val}</span>;
+    if (RUPEE_FIELDS.has(col.key))    return `₹${fmt(val)}`;
+    if (PCT_FIELDS.has(col.key))      return fmtPct(val);
+    if (col.key === 'quantity')       return <span style={{ fontWeight: 700, color: 'rgba(120,190,255,0.9)' }}>{val}</span>;
     return getSafeVal(val) || '-';
   };
 
-  // Render an editable cell
   const renderEditCell = (col) => {
     if (col.key === '_actions') return null;
-    const noEdit = ['unit_price'];
-    if (noEdit.includes(col.key)) return <span style={{ fontSize: 10, color: 'gray' }}>Auto</span>;
+    if (col.key === 'unit_price') return <span style={{ fontSize: 10, color: 'gray' }}>Auto</span>;
     return (
       <input
         style={{ ...inputStyle, textAlign: col.align === 'right' ? 'right' : 'left' }}
@@ -471,45 +438,8 @@ function MainApp() {
           </h1>
         </header>
 
-        
-
-        {/* UPLOAD CARD */}
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <GlassCard style={{ padding: 36 }}>
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 160, borderRadius: 16, border: `1.5px dashed ${dragOver ? 'rgba(100,170,255,0.6)' : 'rgba(255,255,255,0.12)'}`, background: dragOver ? 'rgba(80,140,255,0.08)' : 'rgba(255,255,255,0.02)', transition: 'all 0.2s' }}
-            >
-              <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: '0 0 12px' }}>Drag and drop files, or click below:</p>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button onClick={() => fileInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(100,160,255,0.15)', borderColor: 'rgba(100,160,255,0.3)' }}>Select Files</button>
-                <button onClick={() => folderInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(180,100,255,0.15)', borderColor: 'rgba(180,100,255,0.3)' }}>Select Folder</button>
-              </div>
-              <input type="file" accept="image/*" multiple style={{ display: 'none' }} ref={fileInputRef} onChange={e => setFiles(Array.from(e.target.files))} />
-              <input type="file" accept="image/*" multiple webkitdirectory="true" style={{ display: 'none' }} ref={folderInputRef} onChange={e => setFiles(Array.from(e.target.files).filter(f => f.type.startsWith('image/')))} />
-              <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '16px 0 0' }}>
-                {files.length > 0 ? `${files.length} images queued` : 'PNG, JPG or JPEG'}
-              </p>
-              <div {...getRootProps}>
-                <input {...getInputProps}/>
-                {
-                  isDragActive ?
-                    <p>Drop the files here...</p> :
-                    <p>Drag 'n' drop some files here, or click select files</p>
-                }
-              </div>
-
-            </div>
-            <button onClick={analyzeBatch} disabled={loading || files.length === 0} style={{ marginTop: 24, width: '100%', padding: '14px 32px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.2)', background: loading ? 'rgba(60,100,200,0.3)' : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)', color: 'white', fontWeight: 700, fontSize: 15, cursor: (loading || files.length === 0) ? 'not-allowed' : 'pointer', opacity: (loading || files.length === 0) ? 0.7 : 1 }}>
-              {loading ? progressMsg : 'Analyze Batch'}
-            </button>
-          </GlassCard>
-        </div>
-
         {/* RETRIEVE FROM DB PANEL */}
-        <div style={{ maxWidth: 720, margin: '0 auto 28px', padding: 20 }}>
+        <div style={{ maxWidth: 720, margin: '0 auto 28px' }}>
           <GlassCard style={{ padding: '28px 32px' }}>
             <div style={{ marginBottom: 16 }}>
               <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
@@ -519,64 +449,77 @@ function MainApp() {
                 Pull saved invoices from the database by count, vendor, or item name. Fields can be combined.
               </p>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
-              {/* Last N records */}
               <div>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(140,160,200,0.5)', textTransform: 'uppercase', marginBottom: 6 }}>
-                  Last N Records
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 50"
-                  value={retrieveLimit}
-                  onChange={e => setRetrieveLimit(e.target.value)}
-                  style={{ ...inputStyle, padding: '9px 12px' }}
-                />
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(140,160,200,0.5)', textTransform: 'uppercase', marginBottom: 6 }}>Last N Records</label>
+                <input type="number" min="1" placeholder="e.g. 50" value={retrieveLimit} onChange={e => setRetrieveLimit(e.target.value)} style={{ ...inputStyle, padding: '9px 12px' }} />
               </div>
-              {/* Vendor name */}
               <div>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(140,160,200,0.5)', textTransform: 'uppercase', marginBottom: 6 }}>
-                  Vendor Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ashoka Traders"
-                  value={retrieveVendor}
-                  onChange={e => setRetrieveVendor(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && fetchFromDatabase()}
-                  style={{ ...inputStyle, padding: '9px 12px' }}
-                />
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(140,160,200,0.5)', textTransform: 'uppercase', marginBottom: 6 }}>Vendor Name</label>
+                <input type="text" placeholder="e.g. Ashoka Traders" value={retrieveVendor} onChange={e => setRetrieveVendor(e.target.value)} onKeyDown={e => e.key === 'Enter' && fetchFromDatabase()} style={{ ...inputStyle, padding: '9px 12px' }} />
               </div>
-              {/* Item name */}
               <div>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(140,160,200,0.5)', textTransform: 'uppercase', marginBottom: 6 }}>
-                  Item / Description
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Cement"
-                  value={retrieveItem}
-                  onChange={e => setRetrieveItem(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && fetchFromDatabase()}
-                  style={{ ...inputStyle, padding: '9px 12px' }}
-                />
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(140,160,200,0.5)', textTransform: 'uppercase', marginBottom: 6 }}>Item / Description</label>
+                <input type="text" placeholder="e.g. Cement" value={retrieveItem} onChange={e => setRetrieveItem(e.target.value)} onKeyDown={e => e.key === 'Enter' && fetchFromDatabase()} style={{ ...inputStyle, padding: '9px 12px' }} />
               </div>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <button
-                onClick={fetchFromDatabase}
-                disabled={retrieving}
-                style={{ padding: '10px 24px', borderRadius: 10, border: '0.5px solid rgba(120,160,255,0.35)', background: retrieving ? 'rgba(80,120,255,0.1)' : 'linear-gradient(135deg, rgba(80,130,255,0.3) 0%, rgba(100,60,220,0.2) 100%)', color: retrieving ? 'rgba(255,255,255,0.4)' : 'white', fontWeight: 700, fontSize: 13, cursor: retrieving ? 'not-allowed' : 'pointer', letterSpacing: '0.05em' }}
-              >
+              <button onClick={fetchFromDatabase} disabled={retrieving} style={{ padding: '10px 24px', borderRadius: 10, border: '0.5px solid rgba(120,160,255,0.35)', background: retrieving ? 'rgba(80,120,255,0.1)' : 'linear-gradient(135deg, rgba(80,130,255,0.3) 0%, rgba(100,60,220,0.2) 100%)', color: retrieving ? 'rgba(255,255,255,0.4)' : 'white', fontWeight: 700, fontSize: 13, cursor: retrieving ? 'not-allowed' : 'pointer', letterSpacing: '0.05em' }}>
                 {retrieving ? 'Fetching…' : '⬆ Retrieve from Database'}
               </button>
-              {retrieveError && (
-                <span style={{ fontSize: 12, color: 'rgba(255,110,110,0.9)', fontWeight: 600 }}>{retrieveError}</span>
-              )}
+              {retrieveError && <span style={{ fontSize: 12, color: 'rgba(255,110,110,0.9)', fontWeight: 600 }}>{retrieveError}</span>}
             </div>
+          </GlassCard>
+        </div>
+
+        {/* UPLOAD CARD */}
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <GlassCard style={{ padding: 36 }}>
+            {/* react-dropzone zone */}
+            <div
+              {...getRootProps()}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                height: 160, borderRadius: 16, cursor: 'pointer',
+                border: `1.5px dashed ${isDragActive ? 'rgba(100,170,255,0.7)' : 'rgba(255,255,255,0.12)'}`,
+                background: isDragActive ? 'rgba(80,140,255,0.1)' : 'rgba(255,255,255,0.02)',
+                transition: 'all 0.2s',
+              }}
+            >
+              <input {...getInputProps()} />
+              <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: '0 0 12px' }}>
+                {isDragActive ? 'Drop invoices here…' : 'Drag & drop invoices, or click to select'}
+              </p>
+              {/* Folder select stays as a separate button since dropzone doesn't support webkitdirectory */}
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button
+                  onClick={e => { e.stopPropagation(); folderInputRef.current.click(); }}
+                  style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(180,100,255,0.15)', borderColor: 'rgba(180,100,255,0.3)' }}
+                >
+                  Select Folder
+                </button>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                webkitdirectory="true"
+                style={{ display: 'none' }}
+                ref={folderInputRef}
+                onChange={e => setFiles(prev => [...prev, ...Array.from(e.target.files).filter(f => f.type.startsWith('image/'))])}
+              />
+              <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '16px 0 0' }}>
+                {files.length > 0 ? `${files.length} image${files.length > 1 ? 's' : ''} queued` : 'PNG, JPG or JPEG'}
+              </p>
+            </div>
+
+            <button
+              onClick={analyzeBatch}
+              disabled={loading || files.length === 0}
+              style={{ marginTop: 24, width: '100%', padding: '14px 32px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.2)', background: loading ? 'rgba(60,100,200,0.3)' : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)', color: 'white', fontWeight: 700, fontSize: 15, cursor: (loading || files.length === 0) ? 'not-allowed' : 'pointer', opacity: (loading || files.length === 0) ? 0.7 : 1 }}
+            >
+              {loading ? progressMsg : 'Analyze Batch'}
+            </button>
           </GlassCard>
         </div>
 
@@ -584,8 +527,6 @@ function MainApp() {
         {safeItems.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <GlassCard style={{ padding: 0, overflow: 'hidden' }}>
-
-              {/* Table header bar */}
               <div style={{ padding: '16px 24px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>Master Batch Table</span>
@@ -597,7 +538,6 @@ function MainApp() {
 
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 2800 }}>
-                  {/* Column group row */}
                   <thead>
                     <tr>
                       {COL_GROUPS.map((g, gi) => (
@@ -649,7 +589,6 @@ function MainApp() {
 
               {/* FOOTER */}
               <div style={{ padding: '20px 24px', borderTop: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', background: 'rgba(255,255,255,0.015)' }}>
-                {/* Bulk Project Assign */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <label style={{ fontSize: 12, color: 'rgba(150,160,200,0.6)', letterSpacing: '0.08em', fontWeight: 600, textTransform: 'uppercase' }}>Bulk Assign Project</label>
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -657,12 +596,10 @@ function MainApp() {
                     <button onClick={applyProjectToAll} style={{ ...actionBtnStyle, padding: '0 16px', borderRadius: 6, background: 'rgba(100,160,255,0.2)', borderColor: 'rgba(100,160,255,0.4)' }}>Apply to All</button>
                   </div>
                 </div>
-
-                {/* Totals */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                   {[
                     { label: 'Total Base Amount:', value: `₹${fmt(totalBase)}`, style: { fontSize: 13, color: 'rgba(200,210,240,0.85)' } },
-                    { label: 'Total GST:', value: `₹${fmt(totalGst)}`, style: { fontSize: 13, color: 'rgba(255,180,80,0.85)' } },
+                    { label: 'Total GST:',         value: `₹${fmt(totalGst)}`,  style: { fontSize: 13, color: 'rgba(255,180,80,0.85)' } },
                   ].map(row => (
                     <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', width: 340, gap: 16 }}>
                       <span style={{ fontSize: 13, color: 'rgba(150,160,200,0.6)' }}>{row.label}</span>
@@ -677,24 +614,15 @@ function MainApp() {
               </div>
             </GlassCard>
 
-            {/* SAVE BUTTON */}
+            {/* ACTION BUTTONS */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 24, gap: 12 }}>
               {saveMessage && (
                 <span style={{ fontSize: 13, color: saveMessage.includes('✅') ? 'rgba(80,220,120,0.9)' : 'rgba(255,100,100,0.9)', fontWeight: 600 }}>{saveMessage}</span>
               )}
-              {/* Download XLSX */}
-              <button
-                onClick={downloadXlsx}
-                style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80,160,255,0.4)', background: 'linear-gradient(135deg, rgba(40,100,255,0.2) 0%, rgba(20,60,180,0.1) 100%)', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 12px rgba(40,100,255,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}
-              >
+              <button onClick={downloadXlsx} style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80,160,255,0.4)', background: 'linear-gradient(135deg, rgba(40,100,255,0.2) 0%, rgba(20,60,180,0.1) 100%)', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 12px rgba(40,100,255,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 16 }}>⬇</span> Download as Excel
               </button>
-              {/* Upload to Neon */}
-              <button
-                onClick={handleUploadToDatabase}
-                disabled={savingDb}
-                style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80,200,120,0.4)', background: savingDb ? 'rgba(80,200,120,0.1)' : 'linear-gradient(135deg, rgba(60,180,100,0.2) 0%, rgba(40,140,80,0.1) 100%)', color: savingDb ? 'rgba(255,255,255,0.5)' : 'white', fontWeight: 700, fontSize: 14, cursor: savingDb ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(40,160,80,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}
-              >
+              <button onClick={handleUploadToDatabase} disabled={savingDb} style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80,200,120,0.4)', background: savingDb ? 'rgba(80,200,120,0.1)' : 'linear-gradient(135deg, rgba(60,180,100,0.2) 0%, rgba(40,140,80,0.1) 100%)', color: savingDb ? 'rgba(255,255,255,0.5)' : 'white', fontWeight: 700, fontSize: 14, cursor: savingDb ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(40,160,80,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 16 }}>☁</span> {savingDb ? 'Uploading...' : 'Upload to Database'}
               </button>
             </div>
