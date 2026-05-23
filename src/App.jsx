@@ -88,7 +88,7 @@ function Pill({ label, color = 'rgba(180,200,240,0.7)' }) {
 const COL_GROUPS = [
   { label: 'DOCUMENT', span: 4, color: 'rgba(100,160,255,0.5)' },
   { label: 'SUPPLIER', span: 2, color: 'rgba(180,120,255,0.5)' },
-  { label: 'ITEM / LINE', span: 9, color: 'rgba(80,200,160,0.5)' },
+  { label: 'ITEM / LINE', span: 10, color: 'rgba(80,200,160,0.5)' },
   { label: 'TAX', span: 7, color: 'rgba(255,160,80,0.5)' },
   { label: 'LEDGER', span: 3, color: 'rgba(200,200,100,0.5)' },
   { label: '', span: 1, color: 'transparent' },
@@ -102,6 +102,7 @@ const COLS = [
   { key: 'vendor_name',        label: 'Vendor',      align: 'left',   minW: 130 },
   { key: 'place_of_supply',    label: 'State',       align: 'left',   minW: 80  },
   { key: 'description',        label: 'Item',        align: 'left',   minW: 170 },
+  { key: '_payment',           label: 'Payment',     align: 'center', minW: 90  },
   { key: 'project',            label: 'Project',     align: 'left',   minW: 110 },
   { key: 'hsn_sac',            label: 'HSN/SAC',     align: 'left',   minW: 80,  mono: true },
   { key: 'type',               label: 'Type',        align: 'left',   minW: 100 },
@@ -190,6 +191,7 @@ function MainApp() {
         if (data && Array.isArray(data.items)) {
           const enrichedItems = data.items.map(item => ({
             ...item,
+            payment_status:      'Not Paid',
             invoice_date:        data.invoice_date        || 'N/A',
             invoice_no:          data.invoice_no          || 'N/A',
             voucher_type:        data.voucher_type        || 'N/A',
@@ -350,7 +352,7 @@ function MainApp() {
       } else if (!data.items || data.items.length === 0) {
         setRetrieveError('No records found for that query.');
       } else {
-        setResults({ items: data.items });
+        setResults({ items: data.items.map(item => ({ ...item, payment_status: item.payment_status || 'Not Paid' })) });
         setRetrieveLimit('');
         setRetrieveVendor('');
         setRetrieveItem('');
@@ -393,6 +395,18 @@ function MainApp() {
     if (!globalProject.trim()) return;
     setResults({ items: safeItems.map(item => ({ ...item, project: globalProject })) });
     setGlobalProject('');
+  };
+
+  const togglePayment = (index) => {
+    const clickedItem = safeItems[index];
+    const invoiceNo   = clickedItem.invoice_no;
+    const newStatus   = clickedItem.payment_status === 'Paid' ? 'Not Paid' : 'Paid';
+    // Cross-reference: flip ALL items with the same invoice_no
+    setResults({
+      items: safeItems.map(item =>
+        item.invoice_no === invoiceNo ? { ...item, payment_status: newStatus } : item
+      ),
+    });
   };
 
   const uniqueInvoicesCount = new Set(safeItems.map(item => item.invoice_no)).size;
@@ -498,7 +512,6 @@ function MainApp() {
                 >
                   Select Folder
                 </button>
-                <button onClick={() => fileInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(100,160,255,0.15)', borderColor: 'rgba(100,160,255,0.3)' }}>Select Files</button>
               </div>
               <input
                 type="file"
@@ -572,6 +585,26 @@ function MainApp() {
                                   ) : (
                                     <button style={actionBtnStyle} onClick={() => handleEditClick(i, item)}>Edit</button>
                                   )}
+                                </td>
+                              );
+                            }
+                            if (col.key === '_payment') {
+                              const isPaid = item.payment_status === 'Paid';
+                              return (
+                                <td key={col.key} style={{ padding: '10px 12px', textAlign: 'center', minWidth: col.minW }}>
+                                  <button
+                                    onClick={() => togglePayment(i)}
+                                    style={{
+                                      padding: '3px 10px', borderRadius: 999, fontSize: 10, fontWeight: 700,
+                                      cursor: 'pointer', letterSpacing: '0.05em', border: 'none',
+                                      background: isPaid ? 'rgba(60,200,100,0.2)' : 'rgba(255,80,80,0.15)',
+                                      color: isPaid ? 'rgba(80,220,120,0.95)' : 'rgba(255,110,110,0.9)',
+                                      boxShadow: isPaid ? '0 0 0 1px rgba(80,200,100,0.4)' : '0 0 0 1px rgba(255,80,80,0.3)',
+                                      transition: 'all 0.15s',
+                                    }}
+                                  >
+                                    {isPaid ? '✓ Paid' : '✗ Not Paid'}
+                                  </button>
                                 </td>
                               );
                             }
