@@ -463,6 +463,34 @@ function MainApp() {
           </h1>
         </header>
 
+        
+
+        {/* UPLOAD CARD */}
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <GlassCard style={{ padding: 36 }}>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 160, borderRadius: 16, border: `1.5px dashed ${dragOver ? 'rgba(100,170,255,0.6)' : 'rgba(255,255,255,0.12)'}`, background: dragOver ? 'rgba(80,140,255,0.08)' : 'rgba(255,255,255,0.02)', transition: 'all 0.2s' }}
+            >
+              <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: '0 0 12px' }}>Drag and drop files, or click below:</p>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button onClick={() => fileInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(100,160,255,0.15)', borderColor: 'rgba(100,160,255,0.3)' }}>Select Files</button>
+                <button onClick={() => folderInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(180,100,255,0.15)', borderColor: 'rgba(180,100,255,0.3)' }}>Select Folder</button>
+              </div>
+              <input type="file" accept="image/*" multiple style={{ display: 'none' }} ref={fileInputRef} onChange={e => setFiles(Array.from(e.target.files))} />
+              <input type="file" accept="image/*" multiple webkitdirectory="true" style={{ display: 'none' }} ref={folderInputRef} onChange={e => setFiles(Array.from(e.target.files).filter(f => f.type.startsWith('image/')))} />
+              <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '16px 0 0' }}>
+                {files.length > 0 ? `${files.length} images queued` : 'PNG, JPG or JPEG'}
+              </p>
+            </div>
+            <button onClick={analyzeBatch} disabled={loading || files.length === 0} style={{ marginTop: 24, width: '100%', padding: '14px 32px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.2)', background: loading ? 'rgba(60,100,200,0.3)' : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)', color: 'white', fontWeight: 700, fontSize: 15, cursor: (loading || files.length === 0) ? 'not-allowed' : 'pointer', opacity: (loading || files.length === 0) ? 0.7 : 1 }}>
+              {loading ? progressMsg : 'Analyze Batch'}
+            </button>
+          </GlassCard>
+        </div>
+
         {/* RETRIEVE FROM DB PANEL */}
         <div style={{ maxWidth: 720, margin: '0 auto 28px' }}>
           <GlassCard style={{ padding: '28px 32px' }}>
@@ -532,32 +560,6 @@ function MainApp() {
                 <span style={{ fontSize: 12, color: 'rgba(255,110,110,0.9)', fontWeight: 600 }}>{retrieveError}</span>
               )}
             </div>
-          </GlassCard>
-        </div>
-
-        {/* UPLOAD CARD */}
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <GlassCard style={{ padding: 36 }}>
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 160, borderRadius: 16, border: `1.5px dashed ${dragOver ? 'rgba(100,170,255,0.6)' : 'rgba(255,255,255,0.12)'}`, background: dragOver ? 'rgba(80,140,255,0.08)' : 'rgba(255,255,255,0.02)', transition: 'all 0.2s' }}
-            >
-              <p style={{ fontSize: 14, color: 'rgba(200,215,255,0.8)', margin: '0 0 12px' }}>Drag and drop files, or click below:</p>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button onClick={() => fileInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(100,160,255,0.15)', borderColor: 'rgba(100,160,255,0.3)' }}>Select Files</button>
-                <button onClick={() => folderInputRef.current.click()} style={{ ...actionBtnStyle, padding: '8px 16px', background: 'rgba(180,100,255,0.15)', borderColor: 'rgba(180,100,255,0.3)' }}>Select Folder</button>
-              </div>
-              <input type="file" accept="image/*" multiple style={{ display: 'none' }} ref={fileInputRef} onChange={e => setFiles(Array.from(e.target.files))} />
-              <input type="file" accept="image/*" multiple webkitdirectory="true" style={{ display: 'none' }} ref={folderInputRef} onChange={e => setFiles(Array.from(e.target.files).filter(f => f.type.startsWith('image/')))} />
-              <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '16px 0 0' }}>
-                {files.length > 0 ? `${files.length} images queued` : 'PNG, JPG or JPEG'}
-              </p>
-            </div>
-            <button onClick={analyzeBatch} disabled={loading || files.length === 0} style={{ marginTop: 24, width: '100%', padding: '14px 32px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.2)', background: loading ? 'rgba(60,100,200,0.3)' : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)', color: 'white', fontWeight: 700, fontSize: 15, cursor: (loading || files.length === 0) ? 'not-allowed' : 'pointer', opacity: (loading || files.length === 0) ? 0.7 : 1 }}>
-              {loading ? progressMsg : 'Analyze Batch'}
-            </button>
           </GlassCard>
         </div>
 
