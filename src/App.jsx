@@ -1,4 +1,5 @@
 import React, { useState, Component, useRef } from 'react';
+import * as XLSX from 'xlsx';
 
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
 
@@ -227,6 +228,108 @@ function MainApp() {
     }
   };
 
+  const downloadXlsx = () => {
+    if (safeItems.length === 0) return;
+
+    // Map items to flat rows matching the XLSX backbone column order
+    const rows = safeItems.map(item => ({
+      // DOCUMENT
+      'Invoice Date':       item.invoice_date      || '',
+      'Invoice No':         item.invoice_no         || '',
+      'Voucher Type':       item.voucher_type       || '',
+      'PO Number':          item.po_number          || '',
+      'Reverse Charge':     item.reverse_charge     || 'No',
+      'Paid To':            item.paid_to            || '',
+      'Place of Supply':    item.place_of_supply    || '',
+      // SUPPLIER
+      'Vendor Name':        item.vendor_name        || '',
+      'Vendor Address':     item.vendor_address     || '',
+      'Supplier GSTIN':     item.supplier_gstin     || '',
+      'Supplier PAN':       item.supplier_pan       || '',
+      'Supplier State':     item.supplier_state     || '',
+      'Supplier State Code':item.supplier_state_code|| '',
+      'Supplier Email':     item.supplier_email     || '',
+      'Supplier Phone':     item.supplier_phone     || '',
+      'GSTIN Numbers':      Array.isArray(item.gstin_numbers) ? item.gstin_numbers.join(', ') : (item.gstin_numbers || ''),
+      // ITEM / LINE
+      'Description':        item.description        || '',
+      'HSN/SAC':            item.hsn_sac            || '',
+      'Type':               item.type               || '',
+      'Sub Type':           item.sub_type           || '',
+      'UOM':                item.uom                || '',
+      'Quantity':           parseNum(item.quantity),
+      'Unit Price':         parseNum(item.unit_price),
+      'Discount %':         parseNum(item.discount_pct),
+      'Discount Amount':    parseNum(item.discount_amount),
+      'Base Amount':        parseNum(item.amount),
+      'Base Taxable Value': parseNum(item.base_taxable_value) || parseNum(item.amount),
+      'Project':            item.project            || '',
+      'Project Phase':      item.project_phase      || '',
+      'Nature of Expense':  item.nature_of_expense  || '',
+      // TAX
+      'GST Rate %':         parseNum(item.tax_percentage),
+      'Intra / Inter':      item.intra_or_inter     || '',
+      'CGST %':             parseNum(item.cgst_amount),
+      'SGST %':             parseNum(item.sgst_amount),
+      'IGST %':             parseNum(item.igst_amount),
+      'CGST ₹':             parseNum(item.cgst_rupee),
+      'SGST ₹':             parseNum(item.sgst_rupee),
+      'IGST ₹':             parseNum(item.igst_rupee),
+      'Cess %':             parseNum(item.cess_pct),
+      'Cess ₹':             parseNum(item.cess_amount),
+      'Total GST ₹':        parseNum(item.total_gst),
+      'Total (incl. Tax)':  getItemTotalWithTax(item),
+      // LEDGER
+      'Ledger Account':     item.ledger_account     || '',
+      'Ledger Group':       item.ledger_group       || '',
+      'ITC Eligible':       item.itc_eligible       || 'Yes',
+      'ITC Eligible %':     parseNum(item.itc_eligible_pct) || 100,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Column widths
+    const colWidths = [
+      14, 16, 14, 12, 14, 20, 16,   // DOCUMENT
+      22, 30, 18, 14, 16, 14, 22, 16, 28, // SUPPLIER
+      28, 12, 16, 16, 8, 8, 10, 10, 10, 12, 16, 20, 16, 20, // ITEM
+      10, 12, 8, 8, 8, 10, 10, 10, 8, 8, 12, 16, // TAX
+      22, 18, 12, 12, // LEDGER
+    ];
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+    // Style header row bold
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const cellAddr = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (!ws[cellAddr]) continue;
+      ws[cellAddr].s = { font: { bold: true } };
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Invoice Batch');
+
+    // Summary sheet
+    const totalBase  = safeItems.reduce((s, i) => s + (parseNum(i.base_taxable_value) || parseNum(i.amount)), 0);
+    const totalGst   = safeItems.reduce((s, i) => s + parseNum(i.total_gst), 0);
+    const grandTotal = safeItems.reduce((s, i) => s + getItemTotalWithTax(i), 0);
+    const uniqueInvoices = [...new Set(safeItems.map(i => i.invoice_no))];
+
+    const summaryRows = [
+      { 'Summary': 'Total Line Items',    'Value': safeItems.length },
+      { 'Summary': 'Unique Invoices',     'Value': uniqueInvoices.length },
+      { 'Summary': 'Total Base Amount',   'Value': totalBase },
+      { 'Summary': 'Total GST',           'Value': totalGst },
+      { 'Summary': 'Grand Total (w/Tax)', 'Value': grandTotal },
+    ];
+    const ws2 = XLSX.utils.json_to_sheet(summaryRows);
+    ws2['!cols'] = [{ wch: 24 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
+
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `TheHouseKraft_Invoices_${date}.xlsx`);
+  };
+
   const getItemTotalWithTax = (item) => {
     const base   = parseNum(item?.base_taxable_value) || parseNum(item?.amount);
     const taxPct = parseNum(item?.tax_percentage);
@@ -436,12 +539,24 @@ function MainApp() {
             </GlassCard>
 
             {/* SAVE BUTTON */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 24, gap: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 24, gap: 12 }}>
               {saveMessage && (
                 <span style={{ fontSize: 13, color: saveMessage.includes('✅') ? 'rgba(80,220,120,0.9)' : 'rgba(255,100,100,0.9)', fontWeight: 600 }}>{saveMessage}</span>
               )}
-              <button onClick={handleUploadToDatabase} disabled={savingDb} style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80,200,120,0.4)', background: savingDb ? 'rgba(80,200,120,0.1)' : 'linear-gradient(135deg, rgba(60,180,100,0.2) 0%, rgba(40,140,80,0.1) 100%)', color: savingDb ? 'rgba(255,255,255,0.5)' : 'white', fontWeight: 700, fontSize: 14, cursor: savingDb ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(40,160,80,0.15)' }}>
-                {savingDb ? 'Uploading Batch to Database...' : 'Upload Batch to Database'}
+              {/* Download XLSX */}
+              <button
+                onClick={downloadXlsx}
+                style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80,160,255,0.4)', background: 'linear-gradient(135deg, rgba(40,100,255,0.2) 0%, rgba(20,60,180,0.1) 100%)', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 12px rgba(40,100,255,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}
+              >
+                <span style={{ fontSize: 16 }}>⬇</span> Download as Excel
+              </button>
+              {/* Upload to Neon */}
+              <button
+                onClick={handleUploadToDatabase}
+                disabled={savingDb}
+                style={{ padding: '12px 28px', borderRadius: 12, border: '0.5px solid rgba(80,200,120,0.4)', background: savingDb ? 'rgba(80,200,120,0.1)' : 'linear-gradient(135deg, rgba(60,180,100,0.2) 0%, rgba(40,140,80,0.1) 100%)', color: savingDb ? 'rgba(255,255,255,0.5)' : 'white', fontWeight: 700, fontSize: 14, cursor: savingDb ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(40,160,80,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}
+              >
+                <span style={{ fontSize: 16 }}>☁</span> {savingDb ? 'Uploading...' : 'Upload to Database'}
               </button>
             </div>
           </div>
