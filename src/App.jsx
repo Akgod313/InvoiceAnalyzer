@@ -1,7 +1,7 @@
 import React, { useState, Component, useRef, useEffect } from 'react';
- 
+
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
- 
+
 const glassStyle = {
   position: 'relative',
   background: 'linear-gradient(135deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.04) 60%, rgba(180,200,255,0.07) 100%)',
@@ -10,7 +10,7 @@ const glassStyle = {
   border: '1px solid rgba(255,255,255,0.18)',
   boxShadow: `0 0 0 0.5px rgba(255,255,255,0.08) inset, 0 1.5px 0 0 rgba(255,255,255,0.22) inset, 0 -1px 0 0 rgba(0,0,0,0.15) inset, 1px 0 0 0 rgba(255,255,255,0.1) inset, -1px 0 0 0 rgba(255,255,255,0.05) inset, 0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2)`,
 };
- 
+
 const inputStyle = {
   width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.2)',
   borderRadius: '6px', color: 'white', padding: '6px 10px', fontSize: '13px',
@@ -21,7 +21,7 @@ const actionBtnStyle = {
   color: 'white', padding: '4px 10px', borderRadius: '6px', fontSize: '11px',
   fontWeight: 'bold', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em',
 };
- 
+
 // --- SAFETY UTILITIES ---
 const getSafeVal = (val) => (val !== undefined && val !== null ? String(val) : '');
 const parseNum = (val) => {
@@ -31,7 +31,7 @@ const parseNum = (val) => {
 };
 const fmt = (val) => parseNum(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (val) => parseNum(val) > 0 ? `${parseNum(val)}%` : '-';
- 
+
 // --- ERROR BOUNDARY ---
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null, info: null }; }
@@ -54,7 +54,7 @@ class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
- 
+
 // --- UI COMPONENTS ---
 function GlassCard({ children, style = {} }) {
   return (
@@ -66,7 +66,7 @@ function GlassCard({ children, style = {} }) {
     </div>
   );
 }
- 
+
 function TypeBadge({ label }) {
   return (
     <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', background: 'linear-gradient(135deg, rgba(99,179,255,0.18), rgba(120,100,255,0.12))', border: '0.5px solid rgba(130,190,255,0.3)', color: 'rgba(160,210,255,0.95)' }}>
@@ -74,7 +74,7 @@ function TypeBadge({ label }) {
     </span>
   );
 }
- 
+
 function Pill({ label, color = 'rgba(180,200,240,0.7)' }) {
   return (
     <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 999, fontSize: 10, fontWeight: 600, border: `0.5px solid ${color}`, color, letterSpacing: '0.04em' }}>
@@ -82,7 +82,7 @@ function Pill({ label, color = 'rgba(180,200,240,0.7)' }) {
     </span>
   );
 }
- 
+
 // Column groups for the table header
 const COL_GROUPS = [
   { label: 'DOCUMENT', span: 4, color: 'rgba(100,160,255,0.5)' },
@@ -92,7 +92,7 @@ const COL_GROUPS = [
   { label: 'LEDGER', span: 3, color: 'rgba(200,200,100,0.5)' },
   { label: '', span: 1, color: 'transparent' },
 ];
- 
+
 const COLS = [
   // DOCUMENT
   { key: 'invoice_date',    label: 'Inv Date',     align: 'left',  minW: 90  },
@@ -127,12 +127,12 @@ const COLS = [
   // ACTIONS
   { key: '_actions',        label: 'Actions',      align: 'center',minW: 100 },
 ];
- 
+
 // Fields that show as ₹ values
 const RUPEE_FIELDS = new Set(['unit_price','amount','base_taxable_value','total_gst']);
 // Fields that show as % values
 const PCT_FIELDS   = new Set(['cgst_amount','sgst_amount','igst_amount','discount_pct']);
- 
+
 // --- MAIN APP ---
 function MainApp() {
   const [files, setFiles]               = useState([]);
@@ -150,10 +150,10 @@ function MainApp() {
   const [retrieveItem, setRetrieveItem]       = useState('');
   const [retrieving, setRetrieving]           = useState(false);
   const [retrieveError, setRetrieveError]     = useState('');
- 
+
   const folderInputRef = useRef(null);
   const fileInputRef   = useRef(null);
- 
+
   // Load SheetJS from CDN once on mount
   useEffect(() => {
     if (window.XLSX) return;
@@ -162,30 +162,30 @@ function MainApp() {
     script.async = true;
     document.head.appendChild(script);
   }, []);
- 
+
   const safeItems = Array.isArray(results?.items) ? results.items : [];
- 
+
   const handleDrop = (e) => {
     e.preventDefault(); setDragOver(false);
     if (e.dataTransfer.files?.length > 0) {
       setFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
     }
   };
- 
+
   const analyzeBatch = async () => {
     if (files.length === 0) return alert('Please select files or a folder first');
     setLoading(true); setSaveMessage('');
     let accumulatedItems = [...safeItems];
- 
+
     for (let i = 0; i < files.length; i++) {
       setProgressMsg(`Analyzing ${i + 1} of ${files.length}: ${files[i].name}...`);
       const formData = new FormData();
       formData.append('file', files[i]);
- 
+
       try {
         const response = await fetch('https://invoiceanalyzerbackend.onrender.com/analyze', { method: 'POST', body: formData });
         const data = await response.json();
- 
+
         if (data && Array.isArray(data.items)) {
           // Inject ALL top-level invoice fields into every line item
           const enrichedItems = data.items.map(item => ({
@@ -209,7 +209,7 @@ function MainApp() {
             supplier_phone:      data.supplier_phone      || null,
             gstin_numbers:       data.gstin_numbers       || [],
           }));
- 
+
           accumulatedItems = [...accumulatedItems, ...enrichedItems];
           setResults({ items: accumulatedItems });
         }
@@ -217,12 +217,12 @@ function MainApp() {
         console.error(`Failed on ${files[i].name}:`, error);
       }
     }
- 
+
     setLoading(false);
     setProgressMsg('');
     setFiles([]);
   };
- 
+
   const handleUploadToDatabase = async () => {
     if (!results || safeItems.length === 0) return;
     setSavingDb(true); setSaveMessage('');
@@ -240,12 +240,12 @@ function MainApp() {
       setSavingDb(false);
     }
   };
- 
+
   const downloadXlsx = () => {
     if (safeItems.length === 0) return;
     const XLSX = window.XLSX;
     if (!XLSX) return alert('Excel library still loading, please try again in a moment.');
- 
+
     // Map items to flat rows matching the XLSX backbone column order
     const rows = safeItems.map(item => ({
       // DOCUMENT
@@ -300,9 +300,9 @@ function MainApp() {
       'ITC Eligible':       item.itc_eligible       || 'Yes',
       'ITC Eligible %':     parseNum(item.itc_eligible_pct) || 100,
     }));
- 
+
     const ws = XLSX.utils.json_to_sheet(rows);
- 
+
     // Column widths
     const colWidths = [
       14, 16, 14, 12, 14, 20, 16,   // DOCUMENT
@@ -312,7 +312,7 @@ function MainApp() {
       22, 18, 12, 12, // LEDGER
     ];
     ws['!cols'] = colWidths.map(w => ({ wch: w }));
- 
+
     // Style header row bold
     const range = XLSX.utils.decode_range(ws['!ref']);
     for (let C = range.s.c; C <= range.e.c; C++) {
@@ -320,16 +320,16 @@ function MainApp() {
       if (!ws[cellAddr]) continue;
       ws[cellAddr].s = { font: { bold: true } };
     }
- 
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Invoice Batch');
- 
+
     // Summary sheet
     const totalBase  = safeItems.reduce((s, i) => s + (parseNum(i.base_taxable_value) || parseNum(i.amount)), 0);
     const totalGst   = safeItems.reduce((s, i) => s + parseNum(i.total_gst), 0);
     const grandTotal = safeItems.reduce((s, i) => s + getItemTotalWithTax(i), 0);
     const uniqueInvoices = [...new Set(safeItems.map(i => i.invoice_no))];
- 
+
     const summaryRows = [
       { 'Summary': 'Total Line Items',    'Value': safeItems.length },
       { 'Summary': 'Unique Invoices',     'Value': uniqueInvoices.length },
@@ -340,45 +340,54 @@ function MainApp() {
     const ws2 = XLSX.utils.json_to_sheet(summaryRows);
     ws2['!cols'] = [{ wch: 24 }, { wch: 18 }];
     XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
- 
+
     const date = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(wb, `TheHouseKraft_Invoices_${date}.xlsx`);
   };
- 
+
   const fetchFromDatabase = async () => {
     if (!retrieveLimit && !retrieveVendor && !retrieveItem) {
-      return setRetrieveError('Enter at least one filter — a count, vendor name, or item name.');
+      setRetrieveError('Enter at least one filter — a count, vendor name, or item name.');
+      return;
     }
-    setRetrieving(true); setRetrieveError('');
+    setRetrieving(true);
+    setRetrieveError('');
     try {
       const params = new URLSearchParams();
       if (retrieveLimit)  params.append('limit',       retrieveLimit);
       if (retrieveVendor) params.append('vendor_name', retrieveVendor);
       if (retrieveItem)   params.append('item_name',   retrieveItem);
- 
+
       const res  = await fetch(`https://invoiceanalyzerbackend.onrender.com/fetch?${params}`);
       const data = await res.json();
- 
-      if (data.error) return setRetrieveError(`DB Error: ${data.error}`);
-      if (!data.items?.length) return setRetrieveError('No records found for that query.');
- 
-      setResults({ items: data.items });
-      setRetrieveLimit(''); setRetrieveVendor(''); setRetrieveItem('');
+
+      if (data.error) {
+        setRetrieveError(`DB Error: ${data.error}`);
+      } else if (!data.items || data.items.length === 0) {
+        setRetrieveError('No records found for that query.');
+      } else {
+        setResults({ items: data.items });
+        setRetrieveLimit('');
+        setRetrieveVendor('');
+        setRetrieveItem('');
+      }
     } catch (e) {
       setRetrieveError('Connection failed. Is the backend running?');
     } finally {
       setRetrieving(false);
     }
   };
+
+  const getItemTotalWithTax = (item) => {
     const base   = parseNum(item?.base_taxable_value) || parseNum(item?.amount);
     const taxPct = parseNum(item?.tax_percentage);
     return base + (base * taxPct / 100);
   };
- 
+
   const handleEditClick  = (index, item) => { setEditingIndex(index); setEditFormData({ ...item }); };
   const handleEditChange = (field, value) => setEditFormData({ ...editFormData, [field]: value });
   const handleCancelEdit = () => { setEditingIndex(null); setEditFormData({}); };
- 
+
   const handleSaveEdit = () => {
     const newItems   = [...safeItems];
     const updatedItem = { ...editFormData };
@@ -401,18 +410,18 @@ function MainApp() {
     setResults({ items: newItems });
     setEditingIndex(null);
   };
- 
+
   const applyProjectToAll = () => {
     if (!globalProject.trim()) return;
     setResults({ items: safeItems.map(item => ({ ...item, project: globalProject })) });
     setGlobalProject('');
   };
- 
+
   const uniqueInvoicesCount = new Set(safeItems.map(item => item.invoice_no)).size;
   const totalBase   = safeItems.reduce((s, i) => s + parseNum(i.base_taxable_value || i.amount), 0);
   const totalGst    = safeItems.reduce((s, i) => s + parseNum(i.total_gst), 0);
   const grandTotal  = safeItems.reduce((s, i) => s + getItemTotalWithTax(i), 0);
- 
+
   // Render a single cell value
   const renderCellValue = (col, item) => {
     const val = item[col.key];
@@ -425,7 +434,7 @@ function MainApp() {
     if (col.key === 'quantity')     return <span style={{ fontWeight: 700, color: 'rgba(120,190,255,0.9)' }}>{val}</span>;
     return getSafeVal(val) || '-';
   };
- 
+
   // Render an editable cell
   const renderEditCell = (col) => {
     if (col.key === '_actions') return null;
@@ -439,11 +448,11 @@ function MainApp() {
       />
     );
   };
- 
+
   return (
     <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 60% at 20% 10%, rgba(30,60,140,0.55) 0%, transparent 60%), radial-gradient(ellipse 70% 50% at 80% 80%, rgba(80,30,160,0.45) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 50% 50%, rgba(10,20,60,1) 0%, #050814 100%)', fontFamily: "'SF Pro Display', -apple-system, sans-serif", color: 'white', padding: '60px 24px 80px', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: 1800, margin: '0 auto', position: 'relative', zIndex: 1 }}>
- 
+
         {/* HEADER */}
         <header style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'inline-block', marginBottom: 16, padding: '6px 18px', borderRadius: 999, background: 'linear-gradient(90deg, rgba(80,140,255,0.15), rgba(120,80,255,0.15))', border: '0.5px solid rgba(120,180,255,0.25)', fontSize: 12, letterSpacing: '0.15em', fontWeight: 600, color: 'rgba(160,200,255,0.8)' }}>
@@ -453,7 +462,7 @@ function MainApp() {
             Invoice Analyzer
           </h1>
         </header>
- 
+
         {/* RETRIEVE FROM DB PANEL */}
         <div style={{ maxWidth: 720, margin: '0 auto 28px' }}>
           <GlassCard style={{ padding: '28px 32px' }}>
@@ -465,7 +474,7 @@ function MainApp() {
                 Pull saved invoices from the database by count, vendor, or item name. Fields can be combined.
               </p>
             </div>
- 
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
               {/* Last N records */}
               <div>
@@ -510,7 +519,7 @@ function MainApp() {
                 />
               </div>
             </div>
- 
+
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <button
                 onClick={fetchFromDatabase}
@@ -525,7 +534,7 @@ function MainApp() {
             </div>
           </GlassCard>
         </div>
- 
+
         {/* UPLOAD CARD */}
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <GlassCard style={{ padding: 36 }}>
@@ -551,12 +560,12 @@ function MainApp() {
             </button>
           </GlassCard>
         </div>
- 
+
         {/* RESULTS TABLE */}
         {safeItems.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <GlassCard style={{ padding: 0, overflow: 'hidden' }}>
- 
+
               {/* Table header bar */}
               <div style={{ padding: '16px 24px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -566,7 +575,7 @@ function MainApp() {
                   </span>
                 </div>
               </div>
- 
+
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 2800 }}>
                   {/* Column group row */}
@@ -618,7 +627,7 @@ function MainApp() {
                   </tbody>
                 </table>
               </div>
- 
+
               {/* FOOTER */}
               <div style={{ padding: '20px 24px', borderTop: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', background: 'rgba(255,255,255,0.015)' }}>
                 {/* Bulk Project Assign */}
@@ -629,7 +638,7 @@ function MainApp() {
                     <button onClick={applyProjectToAll} style={{ ...actionBtnStyle, padding: '0 16px', borderRadius: 6, background: 'rgba(100,160,255,0.2)', borderColor: 'rgba(100,160,255,0.4)' }}>Apply to All</button>
                   </div>
                 </div>
- 
+
                 {/* Totals */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                   {[
@@ -648,7 +657,7 @@ function MainApp() {
                 </div>
               </div>
             </GlassCard>
- 
+
             {/* SAVE BUTTON */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 24, gap: 12 }}>
               {saveMessage && (
@@ -675,6 +684,7 @@ function MainApp() {
       </div>
     </div>
   );
+}
 
 export default function App() {
   return (
