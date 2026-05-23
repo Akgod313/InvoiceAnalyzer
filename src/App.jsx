@@ -1,4 +1,4 @@
-import React, { useState, Component, useRef, useEffect } from 'react';
+import React, { useState, Component, useRef, useEffect, useCallback } from 'react';
 import {useDropzone} from 'react-dropzone'
 
 
@@ -494,7 +494,7 @@ function MainApp() {
                 {files.length > 0 ? `${files.length} images queued` : 'PNG, JPG or JPEG'}
               </p>
               <div {...getRootProps}>
-                <input {...getRootProps}/>
+                <input {...getInputProps}/>
                 {
                   isDragActive ?
                     <p>Drop the files here...</p> :
