@@ -1,4 +1,6 @@
 import React, { useState, Component, useRef, useEffect } from 'react';
+import {useDropzone} from 'react-dropzone'
+
 
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
 
@@ -81,6 +83,13 @@ function Pill({ label, color = 'rgba(180,200,240,0.7)' }) {
       {label}
     </span>
   );
+}
+
+function MyDropzone() {
+  const onDrop = useCallback(acceptedFiles => {
+    // Do something with the files
+  }, [])
+  const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
 }
 
 // Column groups for the table header
@@ -484,6 +493,15 @@ function MainApp() {
               <p style={{ fontSize: 12, color: 'rgba(150,160,200,0.5)', margin: '16px 0 0' }}>
                 {files.length > 0 ? `${files.length} images queued` : 'PNG, JPG or JPEG'}
               </p>
+              <div {...getRootProps}>
+                <input {...getRootProps}/>
+                {
+                  isDragActive ?
+                    <p>Drop the files here...</p> :
+                    <p>Drag 'n' drop some files here, or click select files</p>
+                }
+              </div>
+
             </div>
             <button onClick={analyzeBatch} disabled={loading || files.length === 0} style={{ marginTop: 24, width: '100%', padding: '14px 32px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.2)', background: loading ? 'rgba(60,100,200,0.3)' : 'linear-gradient(135deg, rgba(70,130,255,0.55) 0%, rgba(100,60,220,0.45) 100%)', color: 'white', fontWeight: 700, fontSize: 15, cursor: (loading || files.length === 0) ? 'not-allowed' : 'pointer', opacity: (loading || files.length === 0) ? 0.7 : 1 }}>
               {loading ? progressMsg : 'Analyze Batch'}
