@@ -492,7 +492,7 @@ function MainApp() {
         </div>
 
         {/* RETRIEVE FROM DB PANEL */}
-        <div style={{ maxWidth: 720, margin: '0 auto 28px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto 28px', padding: 20 }}>
           <GlassCard style={{ padding: '28px 32px' }}>
             <div style={{ marginBottom: 16 }}>
               <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(160,200,255,0.9)', textTransform: 'uppercase' }}>
