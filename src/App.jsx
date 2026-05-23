@@ -1,5 +1,4 @@
-import React, { useState, Component, useRef } from 'react';
-import * as XLSX from 'xlsx';
+import React, { useState, Component, useRef, useEffect } from 'react';
 
 const noiseDataUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")`;
 
@@ -150,6 +149,15 @@ function MainApp() {
   const folderInputRef = useRef(null);
   const fileInputRef   = useRef(null);
 
+  // Load SheetJS from CDN once on mount
+  useEffect(() => {
+    if (window.XLSX) return;
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
+
   const safeItems = Array.isArray(results?.items) ? results.items : [];
 
   const handleDrop = (e) => {
@@ -230,6 +238,8 @@ function MainApp() {
 
   const downloadXlsx = () => {
     if (safeItems.length === 0) return;
+    const XLSX = window.XLSX;
+    if (!XLSX) return alert('Excel library still loading, please try again in a moment.');
 
     // Map items to flat rows matching the XLSX backbone column order
     const rows = safeItems.map(item => ({
